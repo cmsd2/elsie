@@ -16,7 +16,7 @@ import botFramework.interfaces.IChanBotUnknownCmdListener;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 import botFramework.interfaces.IUser;
 import botFramework.interfaces.IUserFunctions;
 
@@ -127,7 +127,7 @@ public class Alice {
 	}
 			
 	public void chanRespond(IChanEvent e) {
-		IIRCMessage msg = e.getIRCMessage();
+		IIrcMessage msg = e.getIRCMessage();
 		IChannel chan = e.getChannelSource();
 		
 		if ((msg.getCommand().equalsIgnoreCase("PRIVMSG") & !msg.isPrivate())

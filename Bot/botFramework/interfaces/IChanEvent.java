@@ -1,7 +1,7 @@
 package botFramework.interfaces;
 
 public interface IChanEvent {
-	public IIRCMessage getIRCMessage();
+	public IIrcMessage getIRCMessage();
 	
 	public IChannel getChannelSource();
 }

@@ -8,7 +8,7 @@ public interface IChannel {
 
 	public abstract void removeChanListener(IEventListener<IChanEvent> l);
 
-	public abstract void sendChanEvent(IIRCMessage msg);
+	public abstract void sendChanEvent(IIrcMessage msg);
 
 	public abstract void addChanBotListener(IEventListener<IChanBotEvent> l);
 
@@ -19,7 +19,7 @@ public interface IChannel {
 	
 	public abstract void respondToChanEvent(IChanEvent event);
 	
-	public abstract void respondToIrcEvent(IIRCEvent event);
+	public abstract void respondToIrcEvent(IIrcEvent event);
 
 	public abstract void addChanBotUnknownCmdListener(
 			IChanBotUnknownCmdListener l);

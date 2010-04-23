@@ -70,10 +70,10 @@ class BotMessage extends TimerTask {
 		}
 		
 		if (message.matches("\001ACTION .*\001")) {
-			this.bot.sendIRCEvent(new IRCMessage("CTCP_ACTION",this.bot.getNick(),params,message.replaceAll("\001ACTION (.*)\001","$1"),this.bot.getNick(),"",isPrivate));
+			this.bot.sendIRCEvent(new IrcMessage("CTCP_ACTION",this.bot.getNick(),params,message.replaceAll("\001ACTION (.*)\001","$1"),this.bot.getNick(),"",isPrivate));
 		}
 		else {
-			this.bot.sendIRCEvent(new IRCMessage("PRIVMSG",this.bot.getNick(),params,message,this.bot.getNick(),"",isPrivate));
+			this.bot.sendIRCEvent(new IrcMessage("PRIVMSG",this.bot.getNick(),params,message,this.bot.getNick(),"",isPrivate));
 		}
 	}
 }

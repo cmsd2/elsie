@@ -32,15 +32,15 @@ class LightElsie {
 		
 		//Error listener - when it all goes wrong
 		ErrorConsole err = new ErrorConsole();
-		elsieBot.addErrorListener(err);
+		elsieBot.getErrors().add(new ErrorEventListenerAdapter(err));
 		
-		Channel chan = new Channel(elsieBot, args[2]);
-		elsieBot.addIRCListener(chan.getIrcEventListener());
-		elsieBot.addChannel(chan);
+		Channel chan = new Channel(args[2]);
+		elsieBot.getIrcEvents().add(chan.getIrcEventListener());
+		chan.setBot(elsieBot);
 		
 		//Console listener - something to look at
 		Console console = new Console(elsieBot);
-		elsieBot.addIRCListener(console.getIrcListener());
+		elsieBot.getIrcEvents().add(console.getIrcListener());
 		chan.addChanListener(console.getChanListener());
 		
 		elsieBot.start();		//let the mayhem begin

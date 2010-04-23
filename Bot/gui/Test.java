@@ -33,13 +33,13 @@ public class Test {
 		Bot luser2 = new Bot(nicks, servers, 6667, 0, "drone2","iso-8859-1");
 		Bot luser3 = new Bot(nicks, servers, 6667, 0, "drone3","iso-8859-1");
 		
-		IChannel chan1 = new Channel(luser1, "#chu");
-		luser1.addChannel(chan1);
+		Channel chan1 = new Channel("#chu");
+		chan1.setBot(luser1);
 		
-		IChannel chan2 = new Channel(luser2, "#chu");
-		luser2.addChannel(chan2);
+		Channel chan2 = new Channel("#chu");
+		chan2.setBot(luser2);
 		
-		IChannel chan3 = new Channel(luser3,"#chu");
-		luser3.addChannel(chan3);
+		Channel chan3 = new Channel("#chu");
+		chan3.setBot(luser3);
 	}
 }

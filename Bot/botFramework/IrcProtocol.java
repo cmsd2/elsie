@@ -12,22 +12,22 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Vector;
 
-import botFramework.interfaces.IIRCProtocol;
+import botFramework.interfaces.IIrcProtocol;
 
-public class IRCProtocol implements IIRCProtocol {
+public class IrcProtocol implements IIrcProtocol {
 	Pattern cmdParser1;
 	Pattern cmdParser2;
 	Pattern cmdParser3;
 	Pattern ctcpParser;
 
-	public IRCProtocol() {
+	public IrcProtocol() {
 		cmdParser1 = Pattern.compile("^\\:([^ ]+) ([^ ]+) ([^\n]+)");			//Prefix, command, parameters
 		cmdParser2 = Pattern.compile("([\\w]+) ([^\n]+)");					//Command, parameters
 		cmdParser3 = Pattern.compile("([^\\:]*) ?\\:(.*)");
 		ctcpParser = Pattern.compile("(.*)\001([^\001]*?)\001(.*)");
 	}
 	public Object[] parse(String input, String myNick) {
-		IRCMessage output = new IRCMessage();
+		IrcMessage output = new IrcMessage();
 		String temp = null;
 		String[] temp2 = null;
 		String[] temp3;
@@ -88,7 +88,7 @@ public class IRCProtocol implements IIRCProtocol {
 		//System.out.println(output.escapedParams);
 		
 		Vector outputs = new Vector();
-		IRCMessage output2;
+		IrcMessage output2;
 		
 		if (output.getCommand().equalsIgnoreCase("PRIVMSG")) {
 			output.setEscapedParams(output.getEscapedParams().replaceAll("\020\020","\020"));
@@ -97,7 +97,7 @@ public class IRCProtocol implements IIRCProtocol {
 			output.setEscapedParams(output.getEscapedParams().replaceAll("\020\162","\015"));
 			output.setEscapedParams(output.getEscapedParams().replaceAll("\020",""));
 			
-			output2 = (IRCMessage)output.clone();
+			output2 = (IrcMessage)output.clone();
 			
 			matcher = ctcpParser.matcher(output.getEscapedParams());
 			
@@ -127,7 +127,7 @@ public class IRCProtocol implements IIRCProtocol {
 				}
 				
 				matcher = ctcpParser.matcher(output.getEscapedParams());
-				output2 = (IRCMessage)output.clone();
+				output2 = (IrcMessage)output.clone();
 			}
 			
 			if (output.getEscapedParams().length() > 0) {

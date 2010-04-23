@@ -13,11 +13,11 @@ import java.util.EventObject;
 
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChannel;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 
 public class ChanEvent extends EventObject implements IChanEvent{
-	private IIRCMessage msg;
-	public ChanEvent(Object source, IIRCMessage msg) {
+	private IIrcMessage msg;
+	public ChanEvent(Object source, IIrcMessage msg) {
 		super(source);
 		
 		this.msg = msg;
@@ -26,7 +26,7 @@ public class ChanEvent extends EventObject implements IChanEvent{
 	{
 		return (IChannel)super.getSource();
 	}
-	public IIRCMessage getIRCMessage() {
+	public IIrcMessage getIRCMessage() {
 		return msg;
 	}
 	public String toString() {

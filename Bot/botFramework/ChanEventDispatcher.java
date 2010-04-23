@@ -3,7 +3,7 @@ package botFramework;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IEventListener;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 import botFramework.interfaces.IPlugins;
 
 public class ChanEventDispatcher extends EventDispatcher<IChanEvent> {
@@ -17,7 +17,7 @@ public class ChanEventDispatcher extends EventDispatcher<IChanEvent> {
 
 	@Override
 	public String getKey(IChanEvent event) {
-		IIRCMessage msg = event.getIRCMessage();
+		IIrcMessage msg = event.getIRCMessage();
 		return msg.getPrefix();
 	}
 

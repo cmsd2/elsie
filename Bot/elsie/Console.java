@@ -15,9 +15,9 @@ import botFramework.*;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
-import botFramework.interfaces.IIRCEvent;
-import botFramework.interfaces.IIRCListener;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcEvent;
+import botFramework.interfaces.IIrcListener;
+import botFramework.interfaces.IIrcMessage;
 
 public class Console {
 	DateFormat df;
@@ -28,31 +28,40 @@ public class Console {
 		this.bot = bot;
 	}
 	
-	public IIRCListener getIrcListener()
+	private IIrcListener ircListener = null;
+	public IIrcListener getIrcListener()
 	{
-		return new IIRCListener() {
-			@Override
-			public boolean respond(IIRCEvent event) {
-				Console.this.respondToIrcEvent(event);
-				return true;
-			}
-		};
+		if(ircListener == null)
+		{
+			ircListener = new IIrcListener() {
+				@Override
+				public boolean respond(IIrcEvent event) {
+					Console.this.respondToIrcEvent(event);
+					return true;
+				}
+			};
+		}
+		return ircListener;
 	}
 	
+	private IChanListener chanListener = null;
 	public IChanListener getChanListener()
 	{
-		return new IChanListener() {
-			
-			@Override
-			public boolean respond(IChanEvent event) {
-				Console.this.respondToChanEvent(event);
-				return true;
-			}
-		};
+		if(chanListener == null)
+		{
+			chanListener = new IChanListener() {
+				@Override
+				public boolean respond(IChanEvent event) {
+					Console.this.respondToChanEvent(event);
+					return true;
+				}
+			};
+		}
+		return chanListener;
 	}
 	
-	public void respondToIrcEvent(IIRCEvent event) {
-		IIRCMessage msg = event.getIRCMessage();
+	public void respondToIrcEvent(IIrcEvent event) {
+		IIrcMessage msg = event.getIRCMessage();
 		String dateTime = df.format(new Date(System.currentTimeMillis()));
 		
 		if (msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.isPrivate() & !msg.getPrefixNick().equalsIgnoreCase(bot.getNick())) {
@@ -93,7 +102,7 @@ public class Console {
 		}
 	}
 	public void respondToChanEvent(IChanEvent event) {
-		IIRCMessage msg = event.getIRCMessage();
+		IIrcMessage msg = event.getIRCMessage();
 		IChannel chan = event.getChannelSource();
 		String dateTime = df.format(new Date(System.currentTimeMillis()));
 		if (msg.getCommand().equalsIgnoreCase("PRIVMSG") & !msg.isPrivate()) {

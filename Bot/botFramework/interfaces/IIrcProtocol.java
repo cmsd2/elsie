@@ -1,7 +1,7 @@
 package botFramework.interfaces;
 
 
-public interface IIRCProtocol {
+public interface IIrcProtocol {
 	public Object[] parse(String input, String myNick);
 	public String nick(String nick);
 	public String user(String nick, int mode, String username);

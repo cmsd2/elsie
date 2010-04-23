@@ -25,7 +25,7 @@ import botFramework.interfaces.IUserFunctions;
 public class UserFunctions implements IUserFunctions {
 	IBot bot;
 	DBHandler mysql;
-	IRCProtocol irc;
+	IrcProtocol irc;
 	Random rnd;
 	
 	final long typingSpeed = 150;
@@ -42,7 +42,7 @@ public class UserFunctions implements IUserFunctions {
 	public UserFunctions (IBot bot, DBHandler mysql) {
 		this.bot = bot;
 		this.mysql = mysql;
-		irc = new IRCProtocol();
+		irc = new IrcProtocol();
 		rnd = new Random();
 		
 		try {

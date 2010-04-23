@@ -1,6 +1,6 @@
 package botFramework.interfaces;
 
-public interface IIRCMessage {
+public interface IIrcMessage {
 
 	public abstract Object clone();
 

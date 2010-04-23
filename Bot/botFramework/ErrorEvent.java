@@ -11,7 +11,7 @@ package botFramework;
 
 import java.util.EventObject;
 
-public class ErrorEvent extends EventObject {
+public class ErrorEvent extends EventObject implements IErrorEvent {
 	private String module;
 	private String type;
 	private String message;
@@ -23,15 +23,27 @@ public class ErrorEvent extends EventObject {
 		this.type = type;
 		this.message = message;
 	}
+	/* (non-Javadoc)
+	 * @see botFramework.IErrorEvent#getModule()
+	 */
 	public String getModule() {
 		return module;
 	}
+	/* (non-Javadoc)
+	 * @see botFramework.IErrorEvent#getType()
+	 */
 	public String getType() {
 		return type;
 	}
+	/* (non-Javadoc)
+	 * @see botFramework.IErrorEvent#getMessage()
+	 */
 	public String getMessage() {
 		return message;
 	}
+	/* (non-Javadoc)
+	 * @see botFramework.IErrorEvent#toString()
+	 */
 	public String toString() {
 		return module + "|" + type + "|" + message;
 	}

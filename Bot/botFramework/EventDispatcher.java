@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.IEventListener;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 import botFramework.interfaces.IPlugins;
 
 public abstract class EventDispatcher<T> implements IEventListener<T> {

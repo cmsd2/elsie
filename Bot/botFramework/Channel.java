@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import elsie.InputConsole;
+
+import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.IChanBotUnknownCmdListener;
@@ -39,28 +42,27 @@ import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
 import botFramework.interfaces.IEventListener;
-import botFramework.interfaces.IIRCEvent;
-import botFramework.interfaces.IIRCListener;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcEvent;
+import botFramework.interfaces.IIrcListener;
+import botFramework.interfaces.IIrcMessage;
 
 public class Channel implements IChannel {
-	private Bot bot;
+	private IBot bot;
 	private String channel;
 	
 	private Hashtable userStatus;
-	private IRCProtocol irc;
+	private IrcProtocol irc;
 	
 	private Vector<IEventListener<IChanEvent>> chanListeners;
 	private Vector<IEventListener<IChanBotEvent>> chanBotListeners;
 	private Vector chanBotUnknownCmdListeners;
 	
 	
-	public Channel (Bot b, String c) {
-		bot = b;
+	public Channel (String c) {
 		channel = c;
 		
 		userStatus = new Hashtable();
-		irc = new IRCProtocol();
+		irc = new IrcProtocol();
 		
 		chanListeners = new Vector<IEventListener<IChanEvent>>();
 		chanBotListeners = new Vector<IEventListener<IChanBotEvent>>();
@@ -79,14 +81,32 @@ public class Channel implements IChannel {
 		};
 	}
 	
-	public IIRCListener getIrcEventListener() {
-		return new IIRCListener() {
+	public IIrcListener getIrcEventListener() {
+		return new IIrcListener() {
 			@Override
-			public boolean respond(IIRCEvent event) {
+			public boolean respond(IIrcEvent event) {
 				Channel.this.respondToIrcEvent(event);
 				return true;
 			}
 		};
+	}
+	
+	public IBot getBot()
+	{
+		return bot;
+	}
+	
+	public void setBot(IBot bot)
+	{
+		if(this.bot != null)
+		{
+			this.bot.getChannels().remove(this);
+		}
+		this.bot = bot;
+		if(this.bot != null)
+		{
+			this.bot.getChannels().add(this);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -112,7 +132,7 @@ public class Channel implements IChannel {
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#sendChanEvent(botFramework.IRCMessage)
 	 */
-	public void sendChanEvent(IIRCMessage msg) {
+	public void sendChanEvent(IIrcMessage msg) {
 		for (int i = 0; i < chanListeners.size(); i++) {
 			IEventListener<IChanEvent> listener = chanListeners.elementAt(i);
 			listener.respond(new ChanEvent(this, msg));
@@ -201,8 +221,8 @@ public class Channel implements IChannel {
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#ircRespond(botFramework.IRCEvent)
 	 */
-	public void respondToIrcEvent(IIRCEvent event) {
-		IIRCMessage msg = event.getIRCMessage();
+	public void respondToIrcEvent(IIrcEvent event) {
+		IIrcMessage msg = event.getIRCMessage();
 		
 		if (msg.getEscapedParams() == null) {
 			msg.setEscapedParams("");
@@ -270,7 +290,7 @@ public class Channel implements IChannel {
 	 * @see botFramework.IChannel#chanRespond(botFramework.interfaces.IChanEvent)
 	 */
 	public void respondToChanEvent(IChanEvent event) {
-		IIRCMessage command = event.getIRCMessage();
+		IIrcMessage command = event.getIRCMessage();
 		
 		if (command.getCommand().equals("353")) {		//Names command; update user hashtable with current status.
 			User temp = new User();

@@ -1,6 +1,6 @@
 package botFramework;
 
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 
 /**
  * @author sffubs
@@ -10,7 +10,7 @@ import botFramework.interfaces.IIRCMessage;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class IRCMessage implements Cloneable, IIRCMessage {
+public class IrcMessage implements Cloneable, IIrcMessage {
 	private String command;
 	private String prefix;
 	private String[] params;
@@ -19,7 +19,7 @@ public class IRCMessage implements Cloneable, IIRCMessage {
 	private String ident;
 	private boolean isPrivate;
 	
-	public IRCMessage(String command, String prefix, String[] params, String
+	public IrcMessage(String command, String prefix, String[] params, String
 		escapedParams, String prefixNick, String ident, boolean isPrivate) {
 		this.command = command;
 		this.prefix = prefix;
@@ -29,7 +29,7 @@ public class IRCMessage implements Cloneable, IIRCMessage {
 		this.ident = ident;
 		this.isPrivate = isPrivate;
 	}
-	public IRCMessage() {
+	public IrcMessage() {
 	}
 	
 	/* (non-Javadoc)

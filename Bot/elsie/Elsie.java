@@ -59,15 +59,15 @@ class Elsie {
 		
 		//Error listener - when it all goes wrong
 		ErrorConsole err = new ErrorConsole();
-		elsieBot.addErrorListener(err);
+		elsieBot.getErrors().add(new ErrorEventListenerAdapter(err));
 		
-		Channel chan = new Channel(elsieBot, args[2]);
-		elsieBot.addIRCListener(chan.getIrcEventListener());
-		elsieBot.addChannel(chan);
+		Channel chan = new Channel(args[2]);
+		elsieBot.getIrcEvents().add(chan.getIrcEventListener());
+		chan.setBot(elsieBot);
 		
 		//Console listener - something to look at
 		Console console = new Console(elsieBot);
-		elsieBot.addIRCListener(console.getIrcListener());
+		elsieBot.getIrcEvents().add(console.getIrcListener());
 		chan.addChanListener(console.getChanListener());
 		
 		
@@ -92,9 +92,9 @@ class Elsie {
 		
 		if(args.length >= 4)
 		{
-			Channel chan2 = new Channel(elsieBot, args[3]);
-			elsieBot.addIRCListener(chan2.getIrcEventListener());
-			elsieBot.addChannel(chan2);
+			Channel chan2 = new Channel(args[3]);
+			elsieBot.getIrcEvents().add(chan2.getIrcEventListener());
+			chan2.setBot(elsieBot);
 			chan2.addChanListener(console.getChanListener());
 			chan2.addChanBotListener(disp);
 			chan2.addChanBotUnknownCmdListener(unknownCmd);

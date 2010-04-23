@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcMessage;
 
 public class Transcriber extends AbstractPlugin {
 	PreparedStatement queryTranscript;
@@ -37,7 +37,7 @@ public class Transcriber extends AbstractPlugin {
 	public void chanRespond(IChanEvent event) {
 		IChannel chan = event.getChannelSource();
 		
-		IIRCMessage msg = event.getIRCMessage();
+		IIrcMessage msg = event.getIRCMessage();
 
 		if ((msg.getCommand().equalsIgnoreCase("PRIVMSG")
 			|| msg.getCommand().equalsIgnoreCase("JOIN")

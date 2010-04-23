@@ -1,25 +1,21 @@
 package botFramework.interfaces;
 
+import java.util.Set;
+
+import botFramework.IErrorEvent;
+
 public interface IBot {
 
-	public abstract void addChannel(IChannel c);
+	public Set<IChannel> getChannels();
+	
+	public abstract IEventSource<IErrorEvent> getErrors();	
+	public abstract IEventSource<IIrcEvent> getIrcEvents();
+	public abstract IEventSource<IBotEvent> getBotEvents();
 
-	public abstract void addIRCListener(IIRCListener l);
-
-	public abstract void removeIRCListener(IIRCListener l);
-
-	public abstract void sendIRCEvent(IIRCMessage msg);
-
-	public abstract void addBotListener(IBotListener l);
-
-	public abstract void removeBotListener(IBotListener l);
+	public abstract void sendIRCEvent(IIrcMessage msg);
 
 	public abstract void sendBotEvent(String source, String[] botCommand,
 			boolean isPrivate);
-
-	public abstract void addErrorListener(IErrorListener l);
-
-	public abstract void removeErrorListener(IErrorListener l);
 
 	public abstract void sendErrorEvent(String module, String type,
 			String message);
@@ -39,5 +35,5 @@ public interface IBot {
 	
 	public String getHostname();
 
-	public IIRCProtocol getIrc();
+	public IIrcProtocol getIrc();
 }

@@ -11,13 +11,13 @@ package botFramework;
 
 import java.util.EventObject;
 
-import botFramework.interfaces.IIRCEvent;
-import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIrcEvent;
+import botFramework.interfaces.IIrcMessage;
 
 
-public class IRCEvent extends EventObject implements IIRCEvent {
-	private IIRCMessage msg;
-	public IRCEvent(Object source, IIRCMessage msg) {
+public class IrcEvent extends EventObject implements IIrcEvent {
+	private IIrcMessage msg;
+	public IrcEvent(Object source, IIrcMessage msg) {
 		super(source);
 		
 		this.msg = msg;
@@ -25,7 +25,7 @@ public class IRCEvent extends EventObject implements IIRCEvent {
 	/* (non-Javadoc)
 	 * @see botFramework.IIRCEvent#getIRCMessage()
 	 */
-	public IIRCMessage getIRCMessage() {
+	public IIrcMessage getIRCMessage() {
 		return msg;
 	}
 	public String toString() {

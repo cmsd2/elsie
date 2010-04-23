@@ -9,5 +9,5 @@ package botFramework.interfaces;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public interface IIRCListener extends IEventListener<IIRCEvent> {
+public interface IIrcListener extends IEventListener<IIrcEvent> {
 }
