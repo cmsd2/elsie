@@ -1,15 +1,17 @@
 package elsie;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Hashtable;
 
-import botFramework.interfaces.*;
+import botFramework.interfaces.IBot;
+import botFramework.interfaces.IChanBotEvent;
+import botFramework.interfaces.ICommandsMap;
+import botFramework.interfaces.IDatabase;
+import botFramework.interfaces.IPlugins;
+import botFramework.interfaces.IUserFunctions;
+import elsie.util.Beans;
 
-import java.beans.*;
-
-public class Plugins implements IPlugins {
+public class Plugins implements IPlugins, ICommandsMap {
 	private String rootDir;
 	private ClassLoader loader = null;
 	private HashSet<String> prefixExceptions = new HashSet<String>();
@@ -24,6 +26,11 @@ public class Plugins implements IPlugins {
 	public Plugins(String rootDir)
 	{
 		this.rootDir = rootDir;
+	}
+	
+	public ICommandsMap getCommandsMap()
+	{
+		return this;
 	}
 	
 	public HashSet<String> getPrefixExceptions()
@@ -42,6 +49,31 @@ public class Plugins implements IPlugins {
 	
 	public Hashtable<String, String> getChanBotPluginClasses() {
 		return chanBotPluginClasses;
+	}
+	
+	public boolean hasPluginCommand(String cmd)
+	{
+		return chanBotPluginClasses.containsKey(cmd);
+	}
+	
+	public String getPluginCommand(String cmd)
+	{
+		return chanBotPluginClasses.get(cmd);
+	}
+	
+	public void addPluginCommand(String cmd, String cname)
+	{
+		if(chanBotPluginClasses.containsKey(cmd))
+		{
+			throw new IllegalArgumentException("Can't overwrite existing command hook");
+		} else {
+			chanBotPluginClasses.put(cmd, cname);
+		}
+	}
+	
+	public void removePluginCommand(String cmd)
+	{
+		chanBotPluginClasses.remove(cmd);
 	}
 	
 	public String getFallbackCommand()
@@ -70,20 +102,26 @@ public class Plugins implements IPlugins {
 		this.loader = null;
 		this.chanBotPlugins.clear();
 	}
-
-	@Override
-	public IChanListener findPlugin(IChanEvent event) {
-		System.out.println("no plugin for " + event);
-		return null;
+	
+	public <T> String[] getCommand(Object event)
+	{
+		if(event instanceof IChanBotEvent)
+		{
+			return ((IChanBotEvent)event).getBotCommand();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public Object findPlugin(IChanBotEvent event) {
+	public <T> Object findAndLoadPlugin(T event) {
 		System.out.println("finding plugin for " + event);
 		
-		String cmds[] = event.getBotCommand();
+		String cmds[] = getCommand(event);
 		
-		if(cmds.length == 0) {
+		if(cmds == null) {
+			System.out.println("couldn't get command from event " + event);
+		} else if(cmds.length == 0) {
 			System.out.println("command too short");
 			return null;
 		} else if(cmds.length == 1) {
@@ -97,22 +135,51 @@ public class Plugins implements IPlugins {
 		{
 			cmd = cmds[i];
 			
-			String cname = chanBotPluginClasses.get(fallbackCommand);
-			
-			plugin = loadPlugin(cname, event);
-			
-			if(plugin != null)
-				return plugin;
+			plugin = findPluginForCommand(cmd);
 		}
-		
-		String cname = chanBotPluginClasses.get(fallbackCommand);
-		
-		plugin = loadPlugin(cname, event);
+
+		plugin = findPluginForCommand(fallbackCommand);
 		
 		return plugin;
 	}
 	
-	public Object loadPlugin(String cname, IChanBotEvent event)
+	public <T,K> K findAndLoadPlugin(T event, Class<K> iface)
+	{
+		Object plugin = findAndLoadPlugin(event);
+		
+		if(plugin == null)
+			return null;
+		else
+			return Beans.findInterface(plugin, iface);
+	}
+	
+	public Object findPluginForCommand(String cmd)
+	{
+		Object plugin = null;
+		String cname = chanBotPluginClasses.get(cmd);
+		
+		if(cname == null)
+			return null;
+		
+		plugin = loadPlugin(cname);
+
+		if(plugin == null)
+			return null;
+		
+		return plugin;
+	}
+	
+	public <K> K findPluginForCommand(String cmd, Class<K> iface)
+	{
+		Object plugin = findPluginForCommand(cmd);
+		
+		if(plugin == null)
+			return null;
+		else
+			return Beans.findInterface(plugin, iface);
+	}
+	
+	public Object loadPlugin(String cname)
 	{
 		System.out.println("trying lookup of " + cname);
 		
@@ -152,114 +219,23 @@ public class Plugins implements IPlugins {
 		
 		return o;
 	}
-	
-	public <T> T findInterface(Object o, Class<T> c)
-	{
-		if(c.isAssignableFrom(o.getClass()))
-		{
-			return (T)o;
-		} else {
-			T value = null;
-			
-			String name = c.getSimpleName();
-			
-			// strip of leading interface name 'I'
-			if(value == null && name.length() > 2 && name.charAt(0) == 'I' && name.substring(0, 1).equals(name.substring(0, 1).toUpperCase()))
-			{
-				name = name.substring(1);
-				
-				try {
-					value = getProperty(o, name, c);
-				} catch (NoSuchMethodException e) {
-					System.out.println("No method " + name + " on " + o);
-				}
-			}
-			
-			name = c.getSimpleName();
-			
-			try {
-				
-				value = getProperty(o, name, c);
-			} catch (NoSuchMethodException e) {
-				System.out.println("No method " + name + " on " + o);
-			}
 
-			if(value == null)
-			{
-				throw new ClassCastException("Cannot cast " + o + " to " + c);
-			} else {
-				System.out.println("Found interface " + c + " on " + o);
-				return value;
-			}
-		}
-	}
-	
-	public static <T> T getProperty(Object o, String name, Class<T> c) throws NoSuchMethodException
-	{
-		String getter = getGetter(name);
-		
-		try {
-			Method m = o.getClass().getMethod(getter, null);
-			
-			return (T) m.invoke(o, null);
-		} catch (NoSuchMethodException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	public void configurePlugin(Object l)
 	{
 		Class c = l.getClass();
 		
-		setProperty(l, "bot", this.bot, IBot.class);
-		setProperty(l, "plugins", this, IPlugins.class);
-		setProperty(l, "userFunctions", this.userFunctions, IUserFunctions.class);
-		setProperty(l, "database", this.database, IDatabase.class);
+		Beans.setProperty(l, "bot", this.bot, IBot.class);
+		Beans.setProperty(l, "plugins", this, IPlugins.class);
+		Beans.setProperty(l, "userFunctions", this.userFunctions, IUserFunctions.class);
+		Beans.setProperty(l, "database", this.database, IDatabase.class);
 		
-		callMethod(l, "prepare", null, null);
-	}
-	
-	public void callMethod(Object o, String name, Object[] args, Class[] types)
-	{
-		try {
-			System.out.println("calling method " + name + " on " + o);
-			Method m = o.getClass().getMethod(name, types);
-			m.invoke(o, args);
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
-	}
-	
-	public static String getGetter(String name)
-	{
-		return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
-	}
-	
-	public static String getSetter(String name)
-	{
-		return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
-	}
-	
-	public void setProperty(Object o, String name, Object value, Class type)
-	{
-		try {
-			String setter = getSetter(name); 
-			System.out.println("setting property " + name + " using setter " + setter + " on " + o);
-			Method m = o.getClass().getMethod(setter, type);
-			m.invoke(o, value);
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
+		Beans.callMethod(l, "prepare", null, null);
 	}
 
-	@Override
 	public IUserFunctions getUserFunctions() {
 		return userFunctions;
 	}
 
-	@Override
 	public void setUserFunctions(IUserFunctions f) {
 		this.userFunctions = f;
 	}

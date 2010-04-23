@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
+import botFramework.interfaces.ICommandsMap;
 
 public class RemovePlugin extends AbstractPlugin {
 
@@ -19,14 +20,14 @@ public class RemovePlugin extends AbstractPlugin {
 		// cmd[0] == !addplugin
 		String hook = cmd[1];
 		
-		Hashtable<String,String> table = getPlugins().getChanBotPluginClasses();
+		ICommandsMap map = getPlugins().getCommandsMap();
 		
 		if(hook.equals("!addplugin") || hook.equals("!removeplugin") || hook.equals("!reload"))
 		{
 			return false;
 		} else {
 			System.out.println("!removeplugin: removing " + hook);
-			table.remove(hook);
+			map.removePluginCommand(hook);
 		}
 		
 		return true;

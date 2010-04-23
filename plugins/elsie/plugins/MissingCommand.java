@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import elsie.Plugins;
+import elsie.util.Beans;
 
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
@@ -30,19 +31,19 @@ public class MissingCommand extends AbstractPlugin {
 			if(rs.next()) {
 				String className = rs.getString(1);
 				
-				Object plugin = getPlugins().loadPlugin(className, event);
+				Object plugin = getPlugins().loadPlugin(className);
 				
 				if(plugin != null)
 				{
 					System.out.println("Successfully loaded plugin " + command + " => " + className);
 					
 					try {
-						IChanBotListener l = getPlugins().findInterface(plugin, IChanBotListener.class);
+						IChanBotListener l = Beans.findInterface(plugin, IChanBotListener.class);
 						
 						l.respond(event);
 						
 						System.out.println("Saving mapping " + command + " => " + className);
-						getPlugins().getChanBotPluginClasses().put(command, className);
+						getPlugins().getCommandsMap().addPluginCommand(command, className);
 
 					} catch (Exception e) {
 						System.err.println("Exception running plugin " + command + " => " + className);

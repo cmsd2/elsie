@@ -1,9 +1,7 @@
 package elsie.plugins;
 
-import java.util.Hashtable;
-
 import botFramework.interfaces.IChanBotEvent;
-import botFramework.interfaces.IChanBotListener;
+import botFramework.interfaces.ICommandsMap;
 
 public class AddPlugin extends AbstractPlugin {
 
@@ -20,14 +18,14 @@ public class AddPlugin extends AbstractPlugin {
 		String hook = cmd[1];
 		String cname = cmd[2];
 		
-		Hashtable<String,String> table = getPlugins().getChanBotPluginClasses();
+		ICommandsMap map = getPlugins().getCommandsMap();
 		
-		if(table.containsKey(hook))
+		if(map.hasPluginCommand(hook))
 		{
 			return false;
 		} else {
 			System.out.println("!addplugin: adding " + hook + " " + cname);
-			table.put(hook, cname);
+			map.addPluginCommand(hook, cname);
 		}
 		
 		return true;

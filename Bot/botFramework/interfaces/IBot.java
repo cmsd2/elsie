@@ -36,5 +36,8 @@ public interface IBot {
 	public abstract void sendMessages();
 	
 	public String getNick();
+	
+	public String getHostname();
 
+	public IIRCProtocol getIrc();
 }

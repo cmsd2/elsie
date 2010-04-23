@@ -1,21 +1,18 @@
 package botFramework.interfaces;
 
-import java.util.Hashtable;
 
 public interface IPlugins {
-	IChanListener findPlugin(IChanEvent event);
+	<T> Object findAndLoadPlugin(T event);
 	
-	Object findPlugin(IChanBotEvent event);
+	<T,K> K findAndLoadPlugin(T event, Class<K> c);
 	
-	<T> T findInterface(Object o, Class<T> c);
+	public Object findPluginForCommand(String cmd);
+	
+	public <K> K findPluginForCommand(String cmd, Class<K> iface);
 	
 	void reloadPlugins();
 	
-	Object loadPlugin(String className, IChanBotEvent event);
-	
-	public abstract IUserFunctions getUserFunctions();
-	
-	public abstract void setUserFunctions(IUserFunctions f);
-	
-	public Hashtable<String, String> getChanBotPluginClasses();
+	Object loadPlugin(String className);
+
+	public ICommandsMap getCommandsMap();
 }

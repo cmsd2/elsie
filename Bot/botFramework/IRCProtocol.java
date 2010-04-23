@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Vector;
 
-public class IRCProtocol {
+import botFramework.interfaces.IIRCProtocol;
+
+public class IRCProtocol implements IIRCProtocol {
 	Pattern cmdParser1;
 	Pattern cmdParser2;
 	Pattern cmdParser3;

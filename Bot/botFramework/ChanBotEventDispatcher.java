@@ -20,8 +20,6 @@ public class ChanBotEventDispatcher extends EventDispatcher<IChanBotEvent> {
 
 	@Override
 	public IEventListener<IChanBotEvent> loadListener(IChanBotEvent event) {
-		Object o = plugins.findPlugin(event);
-		
-		return plugins.findInterface(o, IChanBotListener.class);
+		return plugins.findAndLoadPlugin(event, IChanBotListener.class);
 	}
 }

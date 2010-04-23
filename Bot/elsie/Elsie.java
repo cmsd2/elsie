@@ -52,10 +52,10 @@ class Elsie {
 		plugins.getPrefixExceptions().add("javax");
 		plugins.getPrefixExceptions().add("botFramework.interfaces");
 		
-		plugins.getChanBotPluginClasses().put("!reload", "elsie.plugins.ReloadPlugins");
-		plugins.getChanBotPluginClasses().put("!memusage", "elsie.plugins.MemUsage");
-		plugins.getChanBotPluginClasses().put("!addplugin", "elsie.plugins.AddPlugin");
-		plugins.getChanBotPluginClasses().put(plugins.getFallbackCommand(), "elsie.plugins.MissingCommand");
+		plugins.addPluginCommand("!reload", "elsie.plugins.ReloadPlugins");
+		plugins.addPluginCommand("!memusage", "elsie.plugins.MemUsage");
+		plugins.addPluginCommand("!addplugin", "elsie.plugins.AddPlugin");
+		plugins.addPluginCommand(plugins.getFallbackCommand(), "elsie.plugins.MissingCommand");
 		
 		//Error listener - when it all goes wrong
 		ErrorConsole err = new ErrorConsole();

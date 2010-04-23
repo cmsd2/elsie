@@ -30,7 +30,6 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.SocketTimeoutException;
-import java.util.TimerTask;
 import java.util.Timer;
 import java.util.Date;
 import java.text.DateFormat;
@@ -43,6 +42,7 @@ import botFramework.interfaces.IErrorListener;
 import botFramework.interfaces.IIRCEvent;
 import botFramework.interfaces.IIRCListener;
 import botFramework.interfaces.IIRCMessage;
+import botFramework.interfaces.IIRCProtocol;
 
 public class Bot extends Thread implements IBot {
 	private final String version = "0.63 2003-02-23";
@@ -64,7 +64,7 @@ public class Bot extends Thread implements IBot {
 	
 	private Socket connection;					//Server connection object
 	private BufferedReader receiver;			//Input object
-	public BufferedWriter sender;				//Output object
+	private BufferedWriter sender;				//Output object
 
 	private IRCProtocol irc;					//IRC protocol object
 
@@ -83,59 +83,6 @@ public class Bot extends Thread implements IBot {
 	
 	private String encoding;
 	
-	private class Message extends TimerTask {
-		String target;
-		String message;
-		long delay;
-		
-		public Message(String target,String message,long delay) {
-			this.target = target;
-			this.message = message;
-			this.delay = delay;
-		}
-		
-		public void run() {
-			String string = irc.privmsg(target,message);
-			String nextString;
-			int i;
-			String[] params = new String[1];
-			final int limit = 510 - (target.length() + myNick.length() + hostname.length() + 15);
-			
-			while (string.length() > limit) {
-				i = string.lastIndexOf(" ",limit - 1);
-				if (i <= limit-50) {
-					nextString = string.substring(limit);
-					string = string.substring(0,limit);
-				}
-				else {
-					nextString = string.substring(i+1);
-					string = string.substring(0,i);
-				}
-				enqueueCommand(string + "\n");
-				string = irc.privmsg(target,nextString);
-			}
-			
-			enqueueCommand(string);
-			params[0] = target;
-			boolean isPrivate;
-			
-			if (target.startsWith("#") | target.startsWith("&")
-				| target.startsWith("!") | target.startsWith("+")) {
-				isPrivate = false;
-			}
-			else {
-				isPrivate = true;
-			}
-			
-			if (message.matches("\001ACTION .*\001")) {
-				sendIRCEvent(new IRCMessage("CTCP_ACTION",myNick,params,message.replaceAll("\001ACTION (.*)\001","$1"),myNick,"",isPrivate));
-			}
-			else {
-				sendIRCEvent(new IRCMessage("PRIVMSG",myNick,params,message,myNick,"",isPrivate));
-			}
-		}
-	}
-
 	//Mode is the join mode on the server - i.e. invisible etc - see RFC
 	public Bot(Vector nicks, Vector servers, int port, int mode, String realname, String encoding) {
 		this.nicks = nicks;
@@ -517,18 +464,18 @@ public class Bot extends Thread implements IBot {
 	 * @see botFramework.IBot#enqueueMessage(java.lang.String, java.lang.String, long)
 	 */
 	public synchronized void enqueueMessage(String target, String message, long delay) {
-		queuedMessages.add(new Message(target,message,delay));
+		queuedMessages.add(new BotMessage(this, target,message,delay));
 	}
 	
 	/* (non-Javadoc)
 	 * @see botFramework.IBot#sendMessages()
 	 */
 	public void sendMessages() {
-		Message msg;
+		BotMessage msg;
 		boolean success;
 		if (!queuedMessages.isEmpty()) {
-			msg = (Message)queuedMessages.remove(0);
-			messageTimer.schedule(msg,msg.delay);
+			msg = (BotMessage)queuedMessages.remove(0);
+			messageTimer.schedule(msg,msg.getDelay());
 		}
 	}
 				
@@ -570,11 +517,20 @@ public class Bot extends Thread implements IBot {
 		}
 	}
 	
+	public IIRCProtocol getIrc()
+	{
+		return irc;
+	}
+	
 	public String getNick() {
 		return myNick;
 	}
 	
 	public String getEncoding() {
 		return encoding;
+	}
+	
+	public String getHostname() {
+		return hostname;
 	}
 }

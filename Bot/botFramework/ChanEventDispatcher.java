@@ -24,8 +24,6 @@ public class ChanEventDispatcher extends EventDispatcher<IChanEvent> {
 
 	@Override
 	public IEventListener<IChanEvent> loadListener(IChanEvent event) {
-		Object o = plugins.findPlugin(event);
-		
-		return plugins.findInterface(o, IChanListener.class);
+		return plugins.findAndLoadPlugin(event, IChanListener.class);
 	}
 }
