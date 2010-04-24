@@ -12,6 +12,7 @@ package elsie;
 import java.util.Vector;
 
 import botFramework.*;
+import botFramework.interfaces.IChannels;
 
 class LightElsie {
 	public static void main(String[] args) {
@@ -34,14 +35,19 @@ class LightElsie {
 		ErrorConsole err = new ErrorConsole();
 		elsieBot.getErrors().add(new ErrorEventListenerAdapter(err));
 		
-		Channel chan = new Channel(args[2]);
-		elsieBot.getIrcEvents().add(chan.getIrcEventListener());
-		chan.setBot(elsieBot);
+		IChannels chans = new Channels();
+		chans.setBot(elsieBot);
 		
 		//Console listener - something to look at
-		Console console = new Console(elsieBot);
-		elsieBot.getIrcEvents().add(console.getIrcListener());
-		chan.addChanListener(console.getChanListener());
+		Console console = new Console();
+		console.setBot(elsieBot);
+		console.setChannels(chans);
+		
+		Channel chan = new Channel();
+		chan.setChannel(args[2]);
+		chan.setBot(elsieBot);
+		chan.setChannels(chans);
+		chan.initialise();
 		
 		elsieBot.start();		//let the mayhem begin
 	}

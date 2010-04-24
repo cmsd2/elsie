@@ -1,5 +1,6 @@
 package elsie.plugins;
 
+import elsie.util.attributes.Inject;
 import botFramework.interfaces.*;
 
 public abstract class AbstractPlugin {
@@ -7,26 +8,40 @@ public abstract class AbstractPlugin {
 	private IPlugins plugins;
 	private IUserFunctions usr;
 	private IDatabase database;
+	private IContext context;
 	
 	public IDatabase getDatabase()
 	{
 		return database;
 	}
 	
+	@Inject
 	public void setDatabase(IDatabase database)
 	{
 		this.database = database;
 	}
-	
+
 	public IBot getBot()
 	{
 		return bot;
 	}
 	
+	@Inject
 	public void setBot(IBot bot)
 	{
 		System.out.println("setting bot property to " + bot);
 		this.bot = bot;
+	}
+	
+	public IContext getContext()
+	{
+		return context;
+	}
+	
+	@Inject
+	public void setContext(IContext context)
+	{
+		this.context = context;
 	}
 	
 	public IPlugins getPlugins()
@@ -34,6 +49,7 @@ public abstract class AbstractPlugin {
 		return plugins;
 	}
 	
+	@Inject
 	public void setPlugins(IPlugins plugins)
 	{
 		System.out.println("setting plugins property to " + plugins);
@@ -45,6 +61,7 @@ public abstract class AbstractPlugin {
 		return usr;
 	}
 	
+	@Inject
 	public void setUserFunctions(IUserFunctions usr)
 	{
 		this.usr = usr;

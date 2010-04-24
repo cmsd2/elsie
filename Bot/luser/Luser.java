@@ -31,18 +31,28 @@ public class Luser {
 		Bot luser2 = new Bot(nicks, servers, 6667, 0, "drone2","iso-8859-1");
 		Bot luser3 = new Bot(nicks, servers, 6667, 0, "drone3","iso-8859-1");
 		
-		Channel chan1 = new Channel("#luserX");
+		Channels chans = new Channels();
+		chans.setBot(luser1);
+		
+		Channel chan1 = new Channel();
+		chan1.setChannel("#luserX");
 		chan1.setBot(luser1);
+		chan1.setChannels(chans);
+		chan1.initialise();
 		
-		Console console = new Console(luser1);
-		luser1.getIrcEvents().add(console.getIrcListener());
-		chan1.addChanListener(console.getChanListener());
+		Console console = new Console();
+		console.setBot(luser1);
+		console.setChannels(chans);
 		
-		Channel chan2 = new Channel("#luserX");
+		Channel chan2 = new Channel();
 		chan2.setBot(luser2);
+		chan2.setChannel("#luserX");
+		chan2.setChannels(chans);
 		
-		Channel chan3 = new Channel("#luserX");
+		Channel chan3 = new Channel();
 		chan3.setBot(luser3);
+		chan3.setChannel("#luserX");
+		chan3.setChannels(chans);
 		
 		luser1.start();
 		luser2.start();

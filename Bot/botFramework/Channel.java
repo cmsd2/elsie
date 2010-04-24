@@ -33,62 +33,99 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 import elsie.InputConsole;
+import elsie.util.attributes.Initializer;
+import elsie.util.attributes.Inject;
 
 import botFramework.interfaces.IBot;
+import botFramework.interfaces.IBotEvent;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.IChanBotUnknownCmdListener;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IChannels;
 import botFramework.interfaces.IEventListener;
+import botFramework.interfaces.IEventSink;
+import botFramework.interfaces.IEventSource;
 import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IIrcListener;
 import botFramework.interfaces.IIrcMessage;
 
-public class Channel implements IChannel {
+public class Channel implements IChannel, IEventSink {
 	private IBot bot;
+	private IChannels channels;
+	
 	private String channel;
 	
 	private Hashtable userStatus;
 	private IrcProtocol irc;
 	
-	private Vector<IEventListener<IChanEvent>> chanListeners;
-	private Vector<IEventListener<IChanBotEvent>> chanBotListeners;
-	private Vector chanBotUnknownCmdListeners;
+	private IEventSource<IErrorEvent> errorEvents;
+	private IEventSource<IChanEvent> chanEvents;
+	private IEventSource<IChanBotEvent> chanBotEvents;
+	private IEventSource<IChanBotEvent> unknownCommandEvents;
 	
+	private EventBridge eventHandler;
 	
-	public Channel (String c) {
-		channel = c;
-		
+	public Channel () {
+		eventHandler = new EventBridge(this);
+		errorEvents = new EventSource<IErrorEvent> (this, null);
+		chanEvents = new EventSource<IChanEvent> (this, errorEvents);
+		chanBotEvents = new EventSource<IChanBotEvent> (this, errorEvents);
+		unknownCommandEvents = new EventSource<IChanBotEvent> (this, errorEvents);
+	}
+	
+	public String getChannel()
+	{
+		return channel;
+	}
+	
+	public void setChannel(String name)
+	{
+		this.channel = name;
+	}
+	
+	@Initializer
+	public void initialise()
+	{
 		userStatus = new Hashtable();
 		irc = new IrcProtocol();
-		
-		chanListeners = new Vector<IEventListener<IChanEvent>>();
-		chanBotListeners = new Vector<IEventListener<IChanBotEvent>>();
-		chanBotUnknownCmdListeners = new Vector();
-		
-		addChanListener(getChanEventListener());
+
+		chanEvents.add(getChanListener());
+	}
+
+	public IChanListener getChanListener() {
+		return eventHandler.getChanListener();
+	}
+
+	public IIrcListener getIrcListener() {
+		return eventHandler.getIrcListener();
 	}
 	
-	public IChanListener getChanEventListener() {
-		return new IChanListener() {
-			@Override
-			public boolean respond(IChanEvent event) {
-				Channel.this.respondToChanEvent(event);
-				return true;
-			}
-		};
+	public IChannels getChannels()
+	{
+		return channels;
 	}
 	
-	public IIrcListener getIrcEventListener() {
-		return new IIrcListener() {
-			@Override
-			public boolean respond(IIrcEvent event) {
-				Channel.this.respondToIrcEvent(event);
-				return true;
-			}
-		};
+	@Inject
+	public void setChannels(IChannels channels)
+	{
+		if(this.channels != null)
+		{
+			chanEvents.remove(this.channels.getChanListener());
+			chanBotEvents.remove(this.channels.getChanBotListener());
+			unknownCommandEvents.remove(this.channels.getUnknownCommandListener());
+			this.channels.removeChannel(this);
+		}
+		this.channels = channels;
+		if(this.channels != null)
+		{
+			chanEvents.add(this.channels.getChanListener());
+			chanBotEvents.add(this.channels.getChanBotListener());
+			unknownCommandEvents.add(this.channels.getUnknownCommandListener());
+			this.channels.addChannel(this);
+		}
 	}
 	
 	public IBot getBot()
@@ -96,132 +133,68 @@ public class Channel implements IChannel {
 		return bot;
 	}
 	
+	@Inject
 	public void setBot(IBot bot)
 	{
 		if(this.bot != null)
 		{
+			this.bot.getIrcEvents().remove(this.getIrcListener());
 			this.bot.getChannels().remove(this);
 		}
 		this.bot = bot;
 		if(this.bot != null)
 		{
 			this.bot.getChannels().add(this);
+			this.bot.getIrcEvents().add(this.getIrcListener());
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#addChanListener(botFramework.interfaces.IChanListener)
-	 */
-	public void addChanListener(IEventListener<IChanEvent> l) {
-		if (chanListeners.contains(l) == false) {
-			System.out.println("adding chan listener " + l);
-			chanListeners.addElement(l);
-		}
+	public IEventSource<IErrorEvent> getErrors()
+	{
+		return errorEvents;
 	}
 	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#removeChanListener(botFramework.interfaces.IChanListener)
-	 */
-	public void removeChanListener(IEventListener<IChanEvent> l) {
-		if (chanListeners.contains(l)) {
-			System.out.println("removing chan listener " + l);
-			chanListeners.removeElement(l);
-		}
+	public IEventSource<IChanEvent> getChanEvents()
+	{
+		return chanEvents;
 	}
 	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#sendChanEvent(botFramework.IRCMessage)
-	 */
+	public IEventSource<IChanBotEvent> getChanBotEvents()
+	{
+		return chanBotEvents;
+	}
+	
+	public IEventSource<IChanBotEvent> getUnknownCommandEvents()
+	{
+		return unknownCommandEvents;
+	}
+
 	public void sendChanEvent(IIrcMessage msg) {
-		for (int i = 0; i < chanListeners.size(); i++) {
-			IEventListener<IChanEvent> listener = chanListeners.elementAt(i);
-			listener.respond(new ChanEvent(this, msg));
-		}
+		chanEvents.sendEvent("Channel.sendChanEvent", new ChanEvent(this, msg));
 	}
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#addChanBotListener(botFramework.interfaces.IChanBotListener)
-	 */
-	public void addChanBotListener(IEventListener<IChanBotEvent> l) {
-		if (chanBotListeners.contains(l) == false) {
-			System.out.println("adding chan bot listener " + l);
-			chanBotListeners.addElement(l);
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#removeChanBotListener(botFramework.interfaces.IChanBotListener)
-	 */
-	public void removeChanBotListener(IEventListener<IChanBotEvent> l) {
-		if (chanBotListeners.contains(l)) {
-			System.out.println("removing chan bot listener " + l);
-			chanBotListeners.removeElement(l);
-		}
-	}	
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#sendChanBotEvent(java.lang.String, java.lang.String[], boolean)
-	 */
+
 	public void sendChanBotEvent(String source, String[] botCommand, boolean isPrivate) {
-		boolean responded = false;
-		for (int i = 0; i < chanBotListeners.size(); i++) {
-			IEventListener<IChanBotEvent> listener = chanBotListeners.elementAt(i);
-			try {
-				responded = responded | listener.respond(new ChanBotEvent(this, source, botCommand, isPrivate));
-			}
-			catch (Exception e) {
-				e.printStackTrace(System.err);
-				bot.sendErrorEvent("Channel.sendChanBotEvent","Exception",e.getMessage());
-			}
-		}
+
+		boolean responded = chanBotEvents.sendEvent("Channel.sendChanBotEvent", new ChanBotEvent(this, source, botCommand, isPrivate));
+		
 		if (responded == false) {
 			sendChanBotUnknownCmdEvent(source, botCommand, isPrivate);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#addChanBotUnknownCmdListener(botFramework.ChanBotUnknownCmdListener)
-	 */
-	public void addChanBotUnknownCmdListener(IChanBotUnknownCmdListener l) {
-		if (chanBotUnknownCmdListeners.contains(l) == false) {
-			System.out.println("adding chan bot unknown cmd listener " + l);
-			chanBotUnknownCmdListeners.addElement(l);
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#removeChanBotUnknownCmdListener(botFramework.ChanBotUnknownCmdListener)
-	 */
-	public void removeChanBotUnknownCmdListener(IChanBotUnknownCmdListener l) {
-		if (chanBotUnknownCmdListeners.contains(l)) {
-			System.out.println("removing chan bot unknown cmd listener " + l);
-			chanBotUnknownCmdListeners.removeElement(l);
-		}
-	}
-	
+
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#sendChanBotUnknownCmdEvent(java.lang.String, java.lang.String[], boolean)
 	 */
 	public void sendChanBotUnknownCmdEvent(String source, String[] botCommand, boolean isPrivate) {
-		for (int i = 0; i < chanBotUnknownCmdListeners.size(); i++) {
-			IChanBotUnknownCmdListener listener = (IChanBotUnknownCmdListener)chanBotUnknownCmdListeners.elementAt(i);
-			boolean success;
-			try {
-				success = listener.respond(new ChanBotEvent(this, source, botCommand, isPrivate));
-				if (success) {
-					return;
-				}
-			}
-			catch (Exception e) {
-				bot.sendErrorEvent("Channel.sendChanBotUnknownCmdEvent","Exception",e.getMessage());
-			}
-		}
+		IChanBotEvent event = new ChanBotEvent(this, source, botCommand, isPrivate);
+		
+		unknownCommandEvents.sendEvent("Channel.sendChanBotUnknownCmdEvent", event);
 	}
 	
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#ircRespond(botFramework.IRCEvent)
 	 */
-	public void respondToIrcEvent(IIrcEvent event) {
+	public boolean respondToIrcEvent(IIrcEvent event) {
 		IIrcMessage msg = event.getIRCMessage();
 		
 		if (msg.getEscapedParams() == null) {
@@ -284,12 +257,14 @@ public class Channel implements IChannel {
 			String[] botCmd = temp.split(" +");
 			sendChanBotEvent(msg.getPrefixNick(),botCmd,msg.isPrivate());
 		}
+		
+		return true;
 	}
 	
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#chanRespond(botFramework.interfaces.IChanEvent)
 	 */
-	public void respondToChanEvent(IChanEvent event) {
+	public boolean respondToChanEvent(IChanEvent event) {
 		IIrcMessage command = event.getIRCMessage();
 		
 		if (command.getCommand().equals("353")) {		//Names command; update user hashtable with current status.
@@ -368,6 +343,7 @@ public class Channel implements IChannel {
 				rehash();
 			}
 		}
+		return true;
 	}
 	
 	/* (non-Javadoc)
@@ -389,13 +365,6 @@ public class Channel implements IChannel {
 	public void rehash() {
 		userStatus.clear();
 		bot.enqueueCommand(irc.names(channel));
-	}
-	
-	/* (non-Javadoc)
-	 * @see botFramework.IChannel#getChannel()
-	 */
-	public String getChannel() {
-		return channel;
 	}
 	
 	/* (non-Javadoc)
@@ -437,5 +406,23 @@ public class Channel implements IChannel {
 	public void part() {
 		bot.enqueueCommand(irc.part(channel));
 		userStatus.clear();
+	}
+
+	@Override
+	public boolean respondToBotEvent(IBotEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean respondToChanBotEvent(IChanBotEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean respondToUnknownCommandListener(IChanBotEvent event) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

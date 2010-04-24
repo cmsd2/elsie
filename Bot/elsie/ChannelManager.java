@@ -17,37 +17,46 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
+import elsie.util.attributes.Initializer;
+import elsie.util.attributes.Inject;
+
 import botFramework.*;
+import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IChannels;
+import botFramework.interfaces.IDatabase;
 import botFramework.interfaces.IIrcMessage;
+import botFramework.interfaces.IIrcProtocol;
 import botFramework.interfaces.IUser;
 import botFramework.interfaces.IUserFunctions;
 
 public class ChannelManager {
-	Bot bot;
-	IrcProtocol irc;
-	IUserFunctions usr;
+	private IBot bot;
+	private IIrcProtocol irc;
+	private IUserFunctions usr;
+	private IChannels channels;
 	
-	boolean angry;
+	private boolean angry;
 
-	DBHandler mysql;
+	private IDatabase mysql;
 	
-	Pattern regexLink;
-	PreparedStatement queryLinks;
+	private Pattern regexLink;
+	private PreparedStatement queryLinks;
 
-	public ChannelManager(Bot b, DBHandler m, IUserFunctions usr) {
-		bot = b;
-		mysql = m;
-		this.usr = usr;
-		
+	public ChannelManager() {
+	}
+	
+	@Initializer
+	public void initialise()
+	{	
 		angry = false;
 
 		try {
-			queryLinks = queryLinks = mysql.db.prepareStatement("SELECT DISTINCT `Nick`,`Description` FROM `transcript` WHERE `Channel`=? AND `Nick`!=? AND (`Event`=\"PRIVMSG\" OR `Event`=\"TOPIC\") AND `Description` LIKE ? AND (`Description` LIKE \"%http://%\" OR `Description` LIKE \"%ftp://%\" OR `Description` LIKE \"%https://%\" OR `Description` LIKE \"%www.%\") ORDER BY `DateTime` DESC LIMIT 5");
+			queryLinks = queryLinks = mysql.getConnection().prepareStatement("SELECT DISTINCT `Nick`,`Description` FROM `transcript` WHERE `Channel`=? AND `Nick`!=? AND (`Event`=\"PRIVMSG\" OR `Event`=\"TOPIC\") AND `Description` LIKE ? AND (`Description` LIKE \"%http://%\" OR `Description` LIKE \"%ftp://%\" OR `Description` LIKE \"%https://%\" OR `Description` LIKE \"%www.%\") ORDER BY `DateTime` DESC LIMIT 5");
 		}
 		catch (SQLException e) {
 			bot.sendErrorEvent("ChannelManager.ChannelManager","SQLException",e.getMessage());
@@ -55,6 +64,60 @@ public class ChannelManager {
 		regexCompile();
 		
 		irc = new IrcProtocol();
+	}
+	
+	public IBot getBot()
+	{
+		return bot;
+	}
+	
+	@Inject
+	public void setBot(IBot bot)
+	{
+		this.bot = bot;
+	}
+	
+	public IUserFunctions getUserFunctions()
+	{
+		return usr;
+	}
+	
+	@Inject
+	public void setUserFunctions(IUserFunctions usr)
+	{
+		this.usr = usr;
+	}
+	
+	public IDatabase getDatabase()
+	{
+		return mysql;
+	}
+	
+	@Inject
+	public void setDatabase(IDatabase msyql)
+	{
+		this.mysql = mysql;
+	}
+	
+	public IChannels getChannels()
+	{
+		return channels;
+	}
+	
+	@Inject
+	public void setChannels(IChannels channels)
+	{
+		if(this.channels != null)
+		{
+			this.channels.getChanBotEvents().remove(getChanBotListener());
+			this.channels.getChanEvents().remove(getChanListener());
+		}
+		this.channels = channels;
+		if(this.channels != null)
+		{
+			this.channels.getChanEvents().add(getChanListener());
+			this.channels.getChanBotEvents().add(getChanBotListener());
+		}
 	}
 	
 	public IChanListener getChanListener()

@@ -10,21 +10,23 @@ package elsie;
  */
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.io.IOException;
+import java.sql.Statement;
 import java.util.Random;
 
-import botFramework.*;
+import botFramework.IrcProtocol;
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IDatabase;
 import botFramework.interfaces.IUser;
 import botFramework.interfaces.IUserFunctions;
+import elsie.util.attributes.Initializer;
+import elsie.util.attributes.Inject;
 
 public class UserFunctions implements IUserFunctions {
 	IBot bot;
-	DBHandler mysql;
+	IDatabase mysql;
 	IrcProtocol irc;
 	Random rnd;
 	
@@ -39,23 +41,48 @@ public class UserFunctions implements IUserFunctions {
 	PreparedStatement queryBotMessage;
 	
 		
-	public UserFunctions (IBot bot, DBHandler mysql) {
-		this.bot = bot;
-		this.mysql = mysql;
+	public UserFunctions () {
+	}
+	
+	@Initializer
+	public void initialise()
+	{
 		irc = new IrcProtocol();
 		rnd = new Random();
 		
 		try {
-			queryAlias = mysql.db.prepareStatement("SELECT Nick FROM aliases WHERE Alias=? LIMIT 1");
-			queryUserInfo = mysql.db.prepareStatement("SELECT * FROM `users` WHERE Username=? LIMIT 1");
-			queryUserIdents = mysql.db.prepareStatement("SELECT * FROM `idents` WHERE User=?");
-			queryAddAlias = mysql.db.prepareStatement("INSERT INTO `aliases` VALUES(?,?)");
-			queryUniqueIdents = mysql.db.prepareStatement("SELECT * FROM `idents` WHERE `Unique`=\"Yes\"");
-			queryBotMessage = mysql.db.prepareStatement("SELECT * FROM `errors` WHERE name=?");
+			queryAlias = mysql.getConnection().prepareStatement("SELECT Nick FROM aliases WHERE Alias=? LIMIT 1");
+			queryUserInfo = mysql.getConnection().prepareStatement("SELECT * FROM `users` WHERE Username=? LIMIT 1");
+			queryUserIdents = mysql.getConnection().prepareStatement("SELECT * FROM `idents` WHERE User=?");
+			queryAddAlias = mysql.getConnection().prepareStatement("INSERT INTO `aliases` VALUES(?,?)");
+			queryUniqueIdents = mysql.getConnection().prepareStatement("SELECT * FROM `idents` WHERE `Unique`=\"Yes\"");
+			queryBotMessage = mysql.getConnection().prepareStatement("SELECT * FROM `errors` WHERE name=?");
 		}
 		catch (SQLException e) {
 			bot.sendErrorEvent("UserFunctions.UserFunctions","SQLException",e.getMessage());
 		}
+	}
+	
+	public IBot getBot()
+	{
+		return bot;
+	}
+	
+	@Inject
+	public void setBot(IBot bot)
+	{
+		this.bot = bot;
+	}
+	
+	public IDatabase getDatabase()
+	{
+		return mysql;
+	}
+	
+	@Inject
+	public void setDatabase(IDatabase database)
+	{
+		this.mysql = database;
 	}
 		
 	/* (non-Javadoc)

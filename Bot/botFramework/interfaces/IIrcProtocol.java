@@ -1,8 +1,10 @@
 package botFramework.interfaces;
 
+import java.util.List;
+
 
 public interface IIrcProtocol {
-	public Object[] parse(String input, String myNick);
+	public List<IIrcMessage> parse(String input, String myNick);
 	public String nick(String nick);
 	public String user(String nick, int mode, String username);
 	public String join(String channel);

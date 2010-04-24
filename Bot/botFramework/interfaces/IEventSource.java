@@ -14,6 +14,6 @@ public interface IEventSource<T> {
 
 	public abstract Set<IEventListener<T>> getListeners();
 
-	public abstract void sendEvent(String module, T event);
+	public abstract boolean sendEvent(String module, T event);
 
 }

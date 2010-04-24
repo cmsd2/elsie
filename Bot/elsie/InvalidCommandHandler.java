@@ -9,17 +9,50 @@ package elsie;
  * Window>Preferences>Java>Code Generation.
  */
 
+import elsie.util.attributes.Inject;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotUnknownCmdListener;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IChannels;
 import botFramework.interfaces.IUserFunctions;
 
 public class InvalidCommandHandler implements IChanBotUnknownCmdListener {
-	IUserFunctions usr;
+	private IUserFunctions usr;
+	private IChannels channels;
 	
-	public InvalidCommandHandler(IUserFunctions usr) {
+	public InvalidCommandHandler() {
+	}
+	
+	public IUserFunctions getUserFunctions()
+	{
+		return usr;
+	}
+	
+	@Inject
+	public void setUserFunctions(IUserFunctions usr)
+	{
 		this.usr = usr;
 	}
+	
+	public IChannels getChannels()
+	{
+		return channels;
+	}
+	
+	@Inject
+	public void setChannels(IChannels channels)
+	{
+		if(this.channels != null)
+		{
+			this.channels.getUnknownCommandEvents().remove(this);
+		}
+		this.channels = channels;
+		if(this.channels != null)
+		{
+			this.channels.getUnknownCommandEvents().add(this);
+		}
+	}
+
 	public boolean respond(IChanBotEvent event) {
 		String source = event.getCommandSource();
 		String[] botCmd = event.getBotCommand();

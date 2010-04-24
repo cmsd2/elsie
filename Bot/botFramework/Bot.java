@@ -154,6 +154,11 @@ public class Bot extends Thread implements IBot {
 		return ircListener;
 	}
 	
+	public String toString()
+	{
+		return "Bot[" + super.toString() + "]@" + hashCode();
+	}
+	
 	public Set<IChannel> getChannels()
 	{
 		return channels;
@@ -193,8 +198,7 @@ public class Bot extends Thread implements IBot {
 	}
 	
 	public void run() {
-		Object[] command;
-		IrcMessage msg;
+		List<IIrcMessage> command;
 		
 		long lastIRCEvent = System.currentTimeMillis();
 		
@@ -217,12 +221,12 @@ public class Bot extends Thread implements IBot {
 					command = receive();
 				
 					lastIRCEvent = System.currentTimeMillis();
-					
-					for (int i = 0; i < command.length; i++) {
-						msg = (IrcMessage)command[i];
+
+					for (IIrcMessage msg : command)
+					{
 						sendIRCEvent(msg);
 						if ((msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.getEscapedParams().matches(myNick + ":? +.*"))
-							| (msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.isPrivate() & !msg.getPrefixNick().equalsIgnoreCase(myNick))) {
+							|| (msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.isPrivate() & !msg.getPrefixNick().equalsIgnoreCase(myNick))) {
 							String temp = msg.getEscapedParams().replaceFirst(myNick + ":? +","");
 							String[] botCmd = temp.split(" +");
 							sendBotEvent(msg.getPrefixNick(),botCmd,msg.isPrivate());
@@ -323,8 +327,8 @@ public class Bot extends Thread implements IBot {
 		}
 	}
 
-	public Object[] receive() throws SocketTimeoutException,IOException {
-		Object[] output;
+	public List<IIrcMessage> receive() throws SocketTimeoutException,IOException {
+		List<IIrcMessage> output;
 		
 		if (receiver.ready() == true) {
 			String input = receiver.readLine();

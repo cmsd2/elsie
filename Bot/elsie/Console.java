@@ -11,21 +11,63 @@ package elsie;
 import java.util.Date;
 import java.text.DateFormat;
 
+import elsie.util.attributes.Inject;
+
 import botFramework.*;
+import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IChannels;
 import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IIrcListener;
 import botFramework.interfaces.IIrcMessage;
 
 public class Console {
-	DateFormat df;
-	Bot bot;
+	private DateFormat df;
+	private IBot bot;
+	private IChannels channels;
 	
-	public Console(Bot bot) {		
+	public Console() {		
 		df = DateFormat.getTimeInstance(DateFormat.SHORT);
+	}
+	
+	public IBot getBot()
+	{
+		return this.bot;
+	}
+	
+	@Inject
+	public void setBot(IBot bot)
+	{
+		if(this.bot != null)
+		{
+			this.bot.getIrcEvents().remove(getIrcListener());
+		}
 		this.bot = bot;
+		if(this.bot != null)
+		{
+			this.bot.getIrcEvents().add(getIrcListener());
+		}
+	}
+	
+	public IChannels getChannels()
+	{
+		return channels;
+	}
+	
+	@Inject
+	public void setChannels(IChannels channels)
+	{
+		if(this.channels != null)
+		{
+			this.channels.getChanEvents().remove(getChanListener());
+		}
+		this.channels = channels;
+		if(this.channels != null)
+		{
+			this.channels.getChanEvents().add(getChanListener());
+		}
 	}
 	
 	private IIrcListener ircListener = null;

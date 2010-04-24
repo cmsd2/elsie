@@ -10,8 +10,10 @@
 package botFramework;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.List;
 import java.util.Vector;
 
+import botFramework.interfaces.IIrcMessage;
 import botFramework.interfaces.IIrcProtocol;
 
 public class IrcProtocol implements IIrcProtocol {
@@ -26,7 +28,7 @@ public class IrcProtocol implements IIrcProtocol {
 		cmdParser3 = Pattern.compile("([^\\:]*) ?\\:(.*)");
 		ctcpParser = Pattern.compile("(.*)\001([^\001]*?)\001(.*)");
 	}
-	public Object[] parse(String input, String myNick) {
+	public List<IIrcMessage> parse(String input, String myNick) {
 		IrcMessage output = new IrcMessage();
 		String temp = null;
 		String[] temp2 = null;
@@ -87,7 +89,7 @@ public class IrcProtocol implements IIrcProtocol {
 		
 		//System.out.println(output.escapedParams);
 		
-		Vector outputs = new Vector();
+		Vector<IIrcMessage> outputs = new Vector<IIrcMessage>();
 		IrcMessage output2;
 		
 		if (output.getCommand().equalsIgnoreCase("PRIVMSG")) {
@@ -138,7 +140,7 @@ public class IrcProtocol implements IIrcProtocol {
 			outputs.add(0,output);
 		}
 		
-		return outputs.toArray();
+		return outputs;
 	}
 	
 	public String nick(String nick) {

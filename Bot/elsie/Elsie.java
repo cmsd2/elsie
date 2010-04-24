@@ -2,12 +2,19 @@ package elsie;
 
 import java.util.Vector;
 
-import elsie.plugins.Help;
-import elsie.plugins.Lastlinks;
-import elsie.plugins.MemUsage;
-import elsie.plugins.Transcriber;
+import elsie.util.Lifecycle;
 
-import botFramework.*;
+import botFramework.Bot;
+import botFramework.ChanBotEventDispatcher;
+import botFramework.Channel;
+import botFramework.Channels;
+import botFramework.DBHandler;
+import botFramework.ErrorEventListenerAdapter;
+import botFramework.interfaces.IBot;
+import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IChannels;
+import botFramework.interfaces.IDatabase;
+import botFramework.interfaces.IPlugins;
 import botFramework.interfaces.IUserFunctions;
 
 class Elsie {
@@ -34,22 +41,25 @@ class Elsie {
 		servers.addElement("efnet.demon.co.uk");
 		servers.addElement("irc.isdnet.fr");
 		
+		Context context = new Context();
+		
 		Bot elsieBot = new Bot(nicks, servers, 6667, 0, "me","iso-8859-1");
+		context.nameObject("bot", IBot.class, elsieBot, Lifecycle.Singleton);
 		
 		//Maintains a database connection
 		String pwd = args[1];
 		DBHandler mysql = new DBHandler(elsieBot,"com.mysql.jdbc.Driver","jdbc:mysql://localhost:3306/irc?user=elsiebot&password=" + pwd);
+		context.nameObject("database", IDatabase.class, mysql, Lifecycle.Singleton);
 		
-		IUserFunctions usr = new UserFunctions(elsieBot,mysql);
+		IUserFunctions usr = context.createSingleton(UserFunctions.class, new Class[] {IUserFunctions.class});
 
 		Plugins plugins = new Plugins(".");
-		
-		plugins.setBot(elsieBot);
-		plugins.setDatabase(mysql);
-		plugins.setUserFunctions(usr);
-		
+		context.initialiseObject(plugins);
+		context.nameObject("plugins", IPlugins.class, plugins, Lifecycle.Singleton);
+
 		plugins.getPrefixExceptions().add("java");
 		plugins.getPrefixExceptions().add("javax");
+		plugins.getPrefixExceptions().add("elsie.util");
 		plugins.getPrefixExceptions().add("botFramework.interfaces");
 		
 		plugins.addPluginCommand("!reload", "elsie.plugins.ReloadPlugins");
@@ -57,47 +67,27 @@ class Elsie {
 		plugins.addPluginCommand("!addplugin", "elsie.plugins.AddPlugin");
 		plugins.addPluginCommand(plugins.getFallbackCommand(), "elsie.plugins.MissingCommand");
 		
-		//Error listener - when it all goes wrong
-		ErrorConsole err = new ErrorConsole();
-		elsieBot.getErrors().add(new ErrorEventListenerAdapter(err));
+		IChannels chans = context.createSingleton(Channels.class, new Class[] { IChannels.class });
+		ErrorConsole err = context.getSingleton(ErrorConsole.class);
+		Console console = context.getSingleton(Console.class);
+
+		ChanBotEventDispatcher disp = context.getSingleton(ChanBotEventDispatcher.class);
+		InvalidCommandHandler unknownCmd = context.getSingleton(InvalidCommandHandler.class);
+		ChannelManager man1 = context.getSingleton("channelManager", ChannelManager.class);
 		
-		Channel chan = new Channel(args[2]);
-		elsieBot.getIrcEvents().add(chan.getIrcEventListener());
-		chan.setBot(elsieBot);
-		
-		//Console listener - something to look at
-		Console console = new Console(elsieBot);
-		elsieBot.getIrcEvents().add(console.getIrcListener());
-		chan.addChanListener(console.getChanListener());
-		
-		
-		//InputConsole - so elsie can talk
-		InputConsole input = new InputConsole(elsieBot,chan);
-		
-		/*Help help = new Help(elsieBot,mysql,usr);
-		chan.addChanBotListener(help);
-		chan2.addChanBotListener(help);*/
-		
-		ChanBotEventDispatcher disp = new ChanBotEventDispatcher(plugins);
-		chan.addChanBotListener(disp);
-		
-		//Perform opping, deopping etc for primary channel
-		ChannelManager man1 = new ChannelManager(elsieBot, mysql, usr);
-		chan.addChanListener(man1.getChanListener());
-		chan.addChanBotListener(man1.getChanBotListener());
-		
-		//Standard invalid command response;
-		InvalidCommandHandler unknownCmd = new InvalidCommandHandler(usr);
-		chan.addChanBotUnknownCmdListener(unknownCmd);
+		Channel chan = context.getObject(Channel.class);
+		chan.setChannel(args[2]);
+		context.nameObject("mainChannel", IChannel.class, chan);
+		//chan.addChanBotListener(help);
+
+		InputConsole input = context.getSingleton(InputConsole.class);
 		
 		if(args.length >= 4)
 		{
-			Channel chan2 = new Channel(args[3]);
-			elsieBot.getIrcEvents().add(chan2.getIrcEventListener());
-			chan2.setBot(elsieBot);
-			chan2.addChanListener(console.getChanListener());
-			chan2.addChanBotListener(disp);
-			chan2.addChanBotUnknownCmdListener(unknownCmd);
+			Channel chan2 = context.getObject(Channel.class);
+			chan2.setChannel(args[3]);
+			chan2.getChanEvents().add(console.getChanListener());
+			//chan2.addChanBotListener(help);
 		}
 		
 		//Perform opping, deopping etc for secondary channel
@@ -125,6 +115,6 @@ class Elsie {
 		chan.addChanBotUnknownCmdListener(chatBot);
 		//chan2.addChanBotUnknownCmdListener(chatBot);*/
 		
-		elsieBot.start();		//let the mayhem begin
+		//elsieBot.start();		//let the mayhem begin
 	}
 }

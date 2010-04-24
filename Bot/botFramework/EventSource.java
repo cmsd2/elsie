@@ -53,12 +53,14 @@ public class EventSource<T> implements IEventSource<T> {
 	/* (non-Javadoc)
 	 * @see botFramework.IEventSource#sendEvent(java.lang.String, T)
 	 */
-	public void sendEvent(String module, T event)
+	public boolean sendEvent(String module, T event)
 	{
+		boolean respondedTo = false;
+		
 		for(IEventListener<T> listener: listeners)
 		{
 			try {
-				listener.respond(event);
+				respondedTo |= listener.respond(event);
 			} catch (Exception e)
 			{
 				if(errorEventSource != null)
@@ -67,5 +69,6 @@ public class EventSource<T> implements IEventSource<T> {
 				}
 			}
 		}
+		return respondedTo;
 	}
 }

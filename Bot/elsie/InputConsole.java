@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import elsie.util.attributes.Initializer;
+import elsie.util.attributes.Inject;
+
 public class InputConsole extends Thread {
 	IBot bot;
 	IChannel channel;
@@ -27,15 +30,44 @@ public class InputConsole extends Thread {
 	Pattern commandParser;
 	
 	
-	public InputConsole(IBot bot,IChannel channel) {
+	public InputConsole() {
+	}
+	
+	public IBot getBot()
+	{
+		return bot;
+	}
+	
+	@Inject
+	public void setBot(IBot bot)
+	{
 		this.bot = bot;
+	}
+	
+	public IChannel getChannel()
+	{
+		return channel;
+	}
+	
+	@Inject(name = "mainChannel")
+	public void setChannel(IChannel channel)
+	{
 		this.channel = channel;
-		
+	}
+	
+	@Initializer
+	public void initialise()
+	{
 		this.input = new BufferedReader(new InputStreamReader(System.in));
 		
 		this.commandParser = Pattern.compile("/([^ ]*) *(.*)");
 		
 		this.start();
+	}
+	
+	public String toString()
+	{
+		return "InputConsole[" + super.toString() + "]@" + hashCode();
 	}
 	
 	public void run() {

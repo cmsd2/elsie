@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.ICommandsMap;
+import botFramework.interfaces.IContext;
 import botFramework.interfaces.IDatabase;
 import botFramework.interfaces.IPlugins;
 import botFramework.interfaces.IUserFunctions;
@@ -18,14 +19,22 @@ public class Plugins implements IPlugins, ICommandsMap {
 	private Hashtable<String, String> chanBotPluginClasses = new Hashtable<String, String> ();
 	private Hashtable<Class, Object> chanBotPlugins = new Hashtable<Class, Object>();
 
-	private IBot bot;
-	private IUserFunctions userFunctions;
-	private IDatabase database;
+	private IContext context;
 	private String fallbackCommand = "!unknown-command";
 	
 	public Plugins(String rootDir)
 	{
 		this.rootDir = rootDir;
+	}
+	
+	public IContext getContext()
+	{
+		return context;
+	}
+	
+	public void setContext(IContext context)
+	{
+		this.context = context;
 	}
 	
 	public ICommandsMap getCommandsMap()
@@ -84,16 +93,6 @@ public class Plugins implements IPlugins, ICommandsMap {
 	public void setFallbackCommand(String fbc)
 	{
 		this.fallbackCommand = fbc;
-	}
-	
-	public IBot getBot()
-	{
-		return bot;
-	}
-	
-	public void setBot(IBot bot)
-	{
-		this.bot = bot;
 	}
 	
 	public void reloadPlugins()
@@ -224,28 +223,8 @@ public class Plugins implements IPlugins, ICommandsMap {
 	{
 		Class c = l.getClass();
 		
-		Beans.setProperty(l, "bot", this.bot, IBot.class);
-		Beans.setProperty(l, "plugins", this, IPlugins.class);
-		Beans.setProperty(l, "userFunctions", this.userFunctions, IUserFunctions.class);
-		Beans.setProperty(l, "database", this.database, IDatabase.class);
-		
+		context.apply(l);
+
 		Beans.callMethod(l, "prepare", null, null);
-	}
-
-	public IUserFunctions getUserFunctions() {
-		return userFunctions;
-	}
-
-	public void setUserFunctions(IUserFunctions f) {
-		this.userFunctions = f;
-	}
-	
-	public IDatabase getDatabase() {
-		return database;
-	}
-	
-	public void setDatabase(IDatabase db)
-	{
-		this.database = db;
 	}
 }
