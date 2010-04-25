@@ -1,4 +1,4 @@
-package elsie;
+package botFramework;
 
 /**
  * @author sffubs
@@ -9,7 +9,9 @@ package elsie;
  * Window>Preferences>Java>Code Generation.
  */
 
-import elsie.util.attributes.Inject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotUnknownCmdListener;
 import botFramework.interfaces.IChannel;
@@ -17,6 +19,8 @@ import botFramework.interfaces.IChannels;
 import botFramework.interfaces.IUserFunctions;
 
 public class InvalidCommandHandler implements IChanBotUnknownCmdListener {
+	private static final Log log = LogFactory.getLog(InvalidCommandHandler.class);
+
 	private IUserFunctions usr;
 	private IChannels channels;
 	
@@ -27,8 +31,7 @@ public class InvalidCommandHandler implements IChanBotUnknownCmdListener {
 	{
 		return usr;
 	}
-	
-	@Inject
+
 	public void setUserFunctions(IUserFunctions usr)
 	{
 		this.usr = usr;
@@ -38,22 +41,24 @@ public class InvalidCommandHandler implements IChanBotUnknownCmdListener {
 	{
 		return channels;
 	}
-	
-	@Inject
+
 	public void setChannels(IChannels channels)
 	{
 		if(this.channels != null)
 		{
+			log.info("Unsubscribing from chan bot events from channel group " + channels);
 			this.channels.getUnknownCommandEvents().remove(this);
 		}
 		this.channels = channels;
 		if(this.channels != null)
 		{
+			log.info("Subscribing to chan bot events from channel group " + channels);
 			this.channels.getUnknownCommandEvents().add(this);
 		}
 	}
 
 	public boolean respond(IChanBotEvent event) {
+		log.info("Responding to event " + event);
 		String source = event.getCommandSource();
 		String[] botCmd = event.getBotCommand();
 		boolean isPrivate = event.getIsPrivate();

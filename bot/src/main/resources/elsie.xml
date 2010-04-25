@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean id="mainChannel" class="botFramework.Channel" scope="singleton">
+		<property name="bot" ref="bot"/>
+		<property name="channels" ref="channels"/>
+		<property name="channel">
+			<value>#elsiebot</value>
+		</property>
+	</bean>
+	
+	<bean id="channelManager" class="elsie.ChannelManager" scope="singleton" init-method="init">
+		<property name="bot" ref="bot"/>
+		<property name="channels" ref="channels"/>
+		<property name="database" ref="database"/>
+		<property name="userFunctions">
+			<ref bean="userFunctions"/>
+		</property>
+	</bean>
+
+	<bean id="invalidCommandHandler" class="elsie.InvalidCommandHandler" scope="singleton">
+		<property name="userFunctions" ref="userFunctions"/>
+		<property name="channels" ref="channels"/>
+	</bean>
+	
+	<bean id="userFunctions" class="elsie.UserFunctions" scope="singleton" init-method="init">
+		<property name="database" ref="database"/>
+	</bean>
+
+	<bean id="inputConsole" class="elsie.InputConsole" scope="singleton" init-method="init">
+		<property name="bot" ref="bot"/>
+		<property name="channel" ref="mainChannel"/>
+	</bean>
+	
+	<bean id="database" class="botFramework.DBHandler" scope="singleton">
+		<property name="bot" ref="bot"/>
+		<property name="driver">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:mysql://localhost:3306/irc?user=elsiebot&amp;password=trncfckwts</value>
+		</property>
+	</bean>
+
+</beans>

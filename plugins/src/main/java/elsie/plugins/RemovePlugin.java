@@ -2,18 +2,26 @@ package elsie.plugins;
 
 import java.util.Hashtable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.ICommandsMap;
 
 public class RemovePlugin extends AbstractPlugin {
 
+	private static final Log log = LogFactory.getLog(RemovePlugin.class);
+
 	@Override
 	public boolean chanBotRespond(IChanBotEvent event) {
+		log.info("Handling event " + event);
+
 		String[] cmd = event.getBotCommand();
 		
 		if(cmd.length < 2)
 		{
+			log.error("At least 2 args required");
 			return false;
 		}
 		
@@ -24,9 +32,10 @@ public class RemovePlugin extends AbstractPlugin {
 		
 		if(hook.equals("!addplugin") || hook.equals("!removeplugin") || hook.equals("!reload"))
 		{
+			log.error("Cowardly refusing to remove core plugin " + hook);
 			return false;
 		} else {
-			System.out.println("!removeplugin: removing " + hook);
+			log.info("Removing " + hook);
 			map.removePluginCommand(hook);
 		}
 		

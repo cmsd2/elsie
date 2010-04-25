@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean id="bot" class="botFramework.Bot" init-method="init">
+		<property name="realName">
+			<value>me</value>
+		</property>
+		<property name="port">
+			<value>6667</value>
+		</property>
+		<property name="encoding">
+			<value>iso-8859-1</value>
+		</property>
+		<property name="mode">
+			<value>0</value>
+		</property>
+ 		<property name="nicks">
+			<list>
+				<value>elsie</value>
+				<value>elsiebot</value>
+				<value>jelsie</value>
+			</list>
+		</property>
+		<property name="servers">
+			<list>
+				<value>irc.prison.net</value>
+				<value>efnet.demon.co.uk</value>
+				<value>irc.isdnet.fr</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="channel" class="botFramework.Channel" scope="prototype" init-method="init">
+		<property name="bot" ref="bot"/>
+		<property name="channels" ref="channels"/>
+	</bean>
+	
+	<bean id="channels" class="botFramework.Channels" scope="singleton">
+		<property name="bot" ref="bot"/>
+	</bean>
+	
+	<bean id="console" class="elsie.Console" scope="singleton">
+		<property name="bot" ref="bot"/>
+		<property name="channels" ref="channels"/>
+	</bean>
+	
+	<bean id="errorConsole" class="elsie.ErrorConsole" scope="singleton">
+		<property name="bot" ref="bot"/>
+	</bean>
+	
+	<bean id="plugins" class="botFramework.Plugins" init-method="init">
+		<property name="classLoaderId">
+			<idref bean="pluginClassLoader"/>
+		</property>
+	</bean>
+		
+	<bean id="chanBotEventDispatcher" class="botFramework.ChanBotEventDispatcher" scope="singleton">
+		<property name="plugins" ref="plugins"/>
+		<property name="channels" ref="channels"/>
+	</bean>
+
+</beans>

@@ -1,7 +1,8 @@
-package elsie;
+package botFramework;
 
-import elsie.util.attributes.Inject;
-import botFramework.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IErrorEvent;
 import botFramework.interfaces.IErrorListener;
@@ -17,23 +18,26 @@ import botFramework.interfaces.IEventListener;
  */
 public class ErrorConsole implements IErrorListener {
 	
+	private static final Log log = LogFactory.getLog(ErrorConsole.class);
+
 	private IBot bot;
 	
 	public IBot getBot()
 	{
 		return bot;
 	}
-	
-	@Inject
+
 	public void setBot(IBot bot)
 	{
 		if(this.bot != null)
 		{
+			log.info("Unsubscribing from error events from bot " + bot);
 			this.bot.getErrors().remove(getErrorListener());
 		}
 		this.bot = bot;
 		if(this.bot != null)
 		{
+			log.info("Subscribing to error events from bot " + bot);
 			this.bot.getErrors().add(getErrorListener());
 		}
 	}

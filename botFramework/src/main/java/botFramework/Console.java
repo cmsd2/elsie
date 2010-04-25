@@ -7,13 +7,13 @@
  * Window>Preferences>Java>Code Generation.
  */
 
-package elsie;
-import java.util.Date;
+package botFramework;
 import java.text.DateFormat;
+import java.util.Date;
 
-import elsie.util.attributes.Inject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import botFramework.*;
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
@@ -24,6 +24,8 @@ import botFramework.interfaces.IIrcListener;
 import botFramework.interfaces.IIrcMessage;
 
 public class Console {
+	private static final Log log = LogFactory.getLog(Console.class);
+
 	private DateFormat df;
 	private IBot bot;
 	private IChannels channels;
@@ -36,17 +38,18 @@ public class Console {
 	{
 		return this.bot;
 	}
-	
-	@Inject
+
 	public void setBot(IBot bot)
 	{
 		if(this.bot != null)
 		{
+			log.info("Unsubscribing from irc events from bot " + bot);
 			this.bot.getIrcEvents().remove(getIrcListener());
 		}
 		this.bot = bot;
 		if(this.bot != null)
 		{
+			log.info("Subscribing to irc events from bot " + bot);
 			this.bot.getIrcEvents().add(getIrcListener());
 		}
 	}
@@ -55,8 +58,7 @@ public class Console {
 	{
 		return channels;
 	}
-	
-	@Inject
+
 	public void setChannels(IChannels channels)
 	{
 		if(this.channels != null)
@@ -103,6 +105,7 @@ public class Console {
 	}
 	
 	public void respondToIrcEvent(IIrcEvent event) {
+		log.debug("Responding to IRC event " + event);
 		IIrcMessage msg = event.getIRCMessage();
 		String dateTime = df.format(new Date(System.currentTimeMillis()));
 		
@@ -144,6 +147,7 @@ public class Console {
 		}
 	}
 	public void respondToChanEvent(IChanEvent event) {
+		log.debug("Responding to Chan event " + event);
 		IIrcMessage msg = event.getIRCMessage();
 		IChannel chan = event.getChannelSource();
 		String dateTime = df.format(new Date(System.currentTimeMillis()));

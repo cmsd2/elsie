@@ -2,6 +2,8 @@ package botFramework.interfaces;
 
 
 public interface IUserFunctions {
+	
+	String ROLE = IUserFunctions.class.getName();
 
 	public abstract String deAlias(String nick);
 

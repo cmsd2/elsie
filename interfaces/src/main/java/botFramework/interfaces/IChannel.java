@@ -3,6 +3,8 @@ package botFramework.interfaces;
 import java.util.Enumeration;
 
 public interface IChannel {
+	
+	String ROLE = IChannel.class.getName();
 
 	public abstract void sendChanEvent(IIrcMessage msg);
 

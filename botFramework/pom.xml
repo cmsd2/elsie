@@ -24,7 +24,22 @@
       <artifactId>elsie-common</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
-  </dependencies>
+    <!--<dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus</artifactId>
+      <version>LATEST</version>
+    </dependency>-->
+    <!--<dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <version>1.5.4</version>
+    </dependency>-->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring</artifactId>
+      <version>2.5.6</version>
+    </dependency>
+ </dependencies>
   <build>
     <plugins>
       <plugin>

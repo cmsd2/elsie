@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+  
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+  </bean>
+
+
+  <bean id="pluginClassLoader" class="elsie.util.LibDirClassLoader" scope="prototype">
+  	<property name="path" value="${elsie.plugins.lib}"/>
+	<property name="prefixExceptions">
+	  <set>
+	  	<value>java</value>
+		<value>javax</value>
+	  	<value>botFramework.interfaces</value>
+		<value>elsie.util</value>
+		<value>org.apache.commons.logging</value>
+		<value>org.springframework</value>
+		<value>org.aopalliance</value>
+	  </set>
+	</property>
+  </bean>
+
+</beans>

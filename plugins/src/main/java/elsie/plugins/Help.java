@@ -20,7 +20,12 @@ import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class Help extends AbstractPlugin {
+	private static final Log log = LogFactory.getLog(Help.class);
+
 	PreparedStatement queryListHelp;
 	PreparedStatement queryHelp;
 	IDatabase mysql;
@@ -48,6 +53,8 @@ public class Help extends AbstractPlugin {
 	}
 	
 	public boolean chanBotRespond(IChanBotEvent event) {
+		log.info("Handling event " + event);
+
 		String[] botCommand = event.getBotCommand();
 		ResultSet results;
 		String[] message = new String[1];

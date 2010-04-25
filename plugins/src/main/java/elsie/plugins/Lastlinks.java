@@ -21,7 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class Lastlinks extends AbstractPlugin {
+	private static final Log log = LogFactory.getLog(Lastlinks.class);
+
 	Pattern regexLink;
 	PreparedStatement queryLinks;
 	
@@ -42,6 +47,8 @@ public class Lastlinks extends AbstractPlugin {
 	}
 	
 	public boolean chanBotRespond(IChanBotEvent event) {
+		log.info("Handling event " + event);
+
 		String source = event.getCommandSource();
 		String[] botCmd = event.getBotCommand();
 		boolean isPrivate = event.getIsPrivate();

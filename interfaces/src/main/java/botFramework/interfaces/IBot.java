@@ -3,6 +3,8 @@ package botFramework.interfaces;
 import java.util.Set;
 
 public interface IBot {
+	
+	String ROLE = IBot.class.getName();
 
 	public Set<IChannel> getChannels();
 	

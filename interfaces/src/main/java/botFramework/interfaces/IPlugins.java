@@ -2,6 +2,8 @@ package botFramework.interfaces;
 
 
 public interface IPlugins {
+	String ROLE = IPlugins.class.getName();
+
 	<T> Object findAndLoadPlugin(T event);
 	
 	<T,K> K findAndLoadPlugin(T event, Class<K> c);

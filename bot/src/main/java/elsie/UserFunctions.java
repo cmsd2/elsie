@@ -21,8 +21,6 @@ import botFramework.interfaces.IChannel;
 import botFramework.interfaces.IDatabase;
 import botFramework.interfaces.IUser;
 import botFramework.interfaces.IUserFunctions;
-import elsie.util.attributes.Initializer;
-import elsie.util.attributes.Inject;
 
 public class UserFunctions implements IUserFunctions {
 	IBot bot;
@@ -44,8 +42,7 @@ public class UserFunctions implements IUserFunctions {
 	public UserFunctions () {
 	}
 	
-	@Initializer
-	public void initialise()
+	public void init()
 	{
 		irc = new IrcProtocol();
 		rnd = new Random();
@@ -67,8 +64,7 @@ public class UserFunctions implements IUserFunctions {
 	{
 		return bot;
 	}
-	
-	@Inject
+
 	public void setBot(IBot bot)
 	{
 		this.bot = bot;
@@ -78,8 +74,7 @@ public class UserFunctions implements IUserFunctions {
 	{
 		return mysql;
 	}
-	
-	@Inject
+
 	public void setDatabase(IDatabase database)
 	{
 		this.mysql = database;

@@ -1,4 +1,4 @@
-package elsie;
+package botFramework;
 
 /**
  * @author sffubs
@@ -9,18 +9,14 @@ package elsie;
  * Window>Preferences>Java>Code Generation.
  */
 
-import botFramework.*;
-import botFramework.interfaces.IBot;
-import botFramework.interfaces.IChannel;
-
-import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import elsie.util.attributes.Initializer;
-import elsie.util.attributes.Inject;
+import botFramework.interfaces.IBot;
+import botFramework.interfaces.IChannel;
 
 public class InputConsole extends Thread {
 	IBot bot;
@@ -37,8 +33,7 @@ public class InputConsole extends Thread {
 	{
 		return bot;
 	}
-	
-	@Inject
+
 	public void setBot(IBot bot)
 	{
 		this.bot = bot;
@@ -48,15 +43,13 @@ public class InputConsole extends Thread {
 	{
 		return channel;
 	}
-	
-	@Inject(name = "mainChannel")
+
 	public void setChannel(IChannel channel)
 	{
 		this.channel = channel;
 	}
 	
-	@Initializer
-	public void initialise()
+	public void init()
 	{
 		this.input = new BufferedReader(new InputStreamReader(System.in));
 		

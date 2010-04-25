@@ -1,72 +1,51 @@
 package elsie.plugins;
 
-import elsie.util.attributes.Inject;
-import botFramework.interfaces.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public abstract class AbstractPlugin {
-	private IBot bot;
-	private IPlugins plugins;
-	private IUserFunctions usr;
-	private IDatabase database;
-	private IContext context;
+import botFramework.interfaces.IBot;
+import botFramework.interfaces.IChanBotEvent;
+import botFramework.interfaces.IChanBotListener;
+import botFramework.interfaces.IChanBotUnknownCmdListener;
+import botFramework.interfaces.IChanEvent;
+import botFramework.interfaces.IChanListener;
+import botFramework.interfaces.IDatabase;
+import botFramework.interfaces.IPlugins;
+import botFramework.interfaces.IUserFunctions;
+
+public abstract class AbstractPlugin implements ApplicationContextAware {
+	private ApplicationContext context;
 	
 	public IDatabase getDatabase()
 	{
-		return database;
-	}
-	
-	@Inject
-	public void setDatabase(IDatabase database)
-	{
-		this.database = database;
+		return (IDatabase) context.getBean("database");
 	}
 
 	public IBot getBot()
 	{
-		return bot;
+		return (IBot) context.getBean("bot");
 	}
 	
-	@Inject
-	public void setBot(IBot bot)
-	{
-		System.out.println("setting bot property to " + bot);
-		this.bot = bot;
-	}
-	
-	public IContext getContext()
+	public ApplicationContext getApplicationContext()
 	{
 		return context;
 	}
-	
-	@Inject
-	public void setContext(IContext context)
+
+	public void setApplicationContext(ApplicationContext context)
 	{
 		this.context = context;
 	}
 	
 	public IPlugins getPlugins()
 	{
-		return plugins;
+		return (IPlugins) context.getBean("plugins");
 	}
-	
-	@Inject
-	public void setPlugins(IPlugins plugins)
-	{
-		System.out.println("setting plugins property to " + plugins);
-		this.plugins = plugins;
-	}
-	
+
 	public IUserFunctions getUserFunctions()
 	{
-		return usr;
+		return (IUserFunctions) context.getBean("userFunctions");
 	}
-	
-	@Inject
-	public void setUserFunctions(IUserFunctions usr)
-	{
-		this.usr = usr;
-	}
-	
+
 	public IChanListener getChanListener()
 	{
 		return new IChanListener() {

@@ -4,11 +4,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
 import elsie.util.Beans;
 
 public class MissingCommand extends AbstractPlugin {
+
+	private static Log log = LogFactory.getLog(MissingCommand.class);
 
 	private PreparedStatement queryPlugins;
 	
@@ -19,9 +24,13 @@ public class MissingCommand extends AbstractPlugin {
 	
 	@Override
 	protected boolean chanBotRespond(IChanBotEvent event) {
+		log.info("Handling event " + event);
+
 		String command = getCommand(event);
 		
 		try {
+			log.info("Querying database for command " + command);
+
 			queryPlugins.setString(1, command);
 			
 			ResultSet rs = queryPlugins.executeQuery();
@@ -29,30 +38,31 @@ public class MissingCommand extends AbstractPlugin {
 			if(rs.next()) {
 				String className = rs.getString(1);
 				
+				log.info("Found plugin " + className);
+				
 				Object plugin = getPlugins().loadPlugin(className);
 				
 				if(plugin != null)
 				{
-					System.out.println("Successfully loaded plugin " + command + " => " + className);
+					log.info("Successfully loaded plugin " + command + " => " + className);
 					
 					try {
 						IChanBotListener l = Beans.findInterface(plugin, IChanBotListener.class);
 						
 						l.respond(event);
 						
-						System.out.println("Saving mapping " + command + " => " + className);
+						log.info("Saving mapping " + command + " => " + className);
 						getPlugins().getCommandsMap().addPluginCommand(command, className);
 
 					} catch (Exception e) {
-						System.err.println("Exception running plugin " + command + " => " + className);
-						e.printStackTrace(System.err);
+						log.error("Exception running plugin " + command + " => " + className, e);
 					}
 				}
 			}
 		} catch (SQLException e) {
-			e.printStackTrace(System.err);
+			log.error("Exception querying database for plugin to handle command " + command ,e);
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
+			log.error("Exception finding plugin to handle command " + command ,e);
 		}
 		
 		return false;

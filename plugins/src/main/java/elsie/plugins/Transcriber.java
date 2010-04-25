@@ -11,12 +11,17 @@ package elsie.plugins;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannel;
 import botFramework.interfaces.IIrcMessage;
 
 public class Transcriber extends AbstractPlugin {
+	private static final Log log = LogFactory.getLog(Transcriber.class);
+
 	PreparedStatement queryTranscript;
 	
 	public Transcriber() {
@@ -35,9 +40,13 @@ public class Transcriber extends AbstractPlugin {
 	}
 
 	public void chanRespond(IChanEvent event) {
+		log.info("Handling event " + event);
+
 		IChannel chan = event.getChannelSource();
 		
 		IIrcMessage msg = event.getIRCMessage();
+		
+		log.info("Command is " + msg.getCommand() + ". Private? " + msg.isPrivate());
 
 		if ((msg.getCommand().equalsIgnoreCase("PRIVMSG")
 			|| msg.getCommand().equalsIgnoreCase("JOIN")
@@ -50,6 +59,7 @@ public class Transcriber extends AbstractPlugin {
 			|| msg.getCommand().equalsIgnoreCase("KICK")
 			|| msg.getCommand().equalsIgnoreCase("TOPIC")) & !msg.isPrivate()) {
 				
+			log.info("Saving public message " + msg.getCommand() + " to database");
 			/* (msg.ident == null) {
 				msg.ident = "";
 			}*/

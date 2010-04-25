@@ -30,6 +30,9 @@ package botFramework;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IBotEvent;
 import botFramework.interfaces.IChanBotEvent;
@@ -43,10 +46,10 @@ import botFramework.interfaces.IEventSource;
 import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IIrcListener;
 import botFramework.interfaces.IIrcMessage;
-import elsie.util.attributes.Initializer;
-import elsie.util.attributes.Inject;
 
 public class Channel implements IChannel, IEventSink {
+	private static final Log log = LogFactory.getLog(Channel.class);
+
 	private IBot bot;
 	private IChannels channels;
 	
@@ -79,9 +82,8 @@ public class Channel implements IChannel, IEventSink {
 	{
 		this.channel = name;
 	}
-	
-	@Initializer
-	public void initialise()
+
+	public void init()
 	{
 		userStatus = new Hashtable();
 		irc = new IrcProtocol();
@@ -101,8 +103,7 @@ public class Channel implements IChannel, IEventSink {
 	{
 		return channels;
 	}
-	
-	@Inject
+
 	public void setChannels(IChannels channels)
 	{
 		if(this.channels != null)
@@ -126,8 +127,7 @@ public class Channel implements IChannel, IEventSink {
 	{
 		return bot;
 	}
-	
-	@Inject
+
 	public void setBot(IBot bot)
 	{
 		if(this.bot != null)
@@ -189,6 +189,8 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#ircRespond(botFramework.IRCEvent)
 	 */
 	public boolean respondToIrcEvent(IIrcEvent event) {
+		log.debug("Responding to IRC event " + event);
+
 		IIrcMessage msg = event.getIRCMessage();
 		
 		if (msg.getEscapedParams() == null) {
@@ -259,6 +261,8 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#chanRespond(botFramework.interfaces.IChanEvent)
 	 */
 	public boolean respondToChanEvent(IChanEvent event) {
+		log.debug("Responding to Chan event " + event);
+
 		IIrcMessage command = event.getIRCMessage();
 		
 		if (command.getCommand().equals("353")) {		//Names command; update user hashtable with current status.
@@ -347,6 +351,7 @@ public class Channel implements IChannel, IEventSink {
 		if (userStatus.containsKey(user) == true) {
 			User temp = (User)userStatus.get(user);
 			if (ident.compareTo(temp.ident) != 0) {
+				log.info("Updating ident for user " + user + " to " + ident);
 				userStatus.remove(user);
 				userStatus.put(user,new User(ident,temp.status));
 			}
@@ -357,6 +362,7 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#rehash()
 	 */
 	public void rehash() {
+		log.info("rehashing");
 		userStatus.clear();
 		bot.enqueueCommand(irc.names(channel));
 	}
@@ -391,6 +397,7 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#join()
 	 */
 	public void join() {
+		log.info("joining " + channel);
 		bot.enqueueCommand(irc.join(channel));
 	}
 	
@@ -398,6 +405,7 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#part()
 	 */
 	public void part() {
+		log.info("parting " + channel);
 		bot.enqueueCommand(irc.part(channel));
 		userStatus.clear();
 	}

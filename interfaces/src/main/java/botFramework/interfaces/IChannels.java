@@ -1,6 +1,8 @@
 package botFramework.interfaces;
 
 public interface IChannels {
+	
+	String ROLE = IChannels.class.getName();
 
 	public abstract IBot getBot();
 

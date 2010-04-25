@@ -17,43 +17,86 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IDatabase;
 
 public class DBHandler implements IDatabase {
-	public Connection db;
+	private Log log = LogFactory.getLog(DBHandler.class);
+	private Connection db;
+	private String driver;
 	private String url;
 	private IBot bot;
-	public DBHandler(IBot bot, String driver, String url) {
+	
+	public DBHandler() {
+	}
+	
+	public IBot getBot()
+	{
+		return this.bot;
+	}
+	
+	public void setBot(IBot bot)
+	{
+		this.bot = bot;
+	}
+	
+	public String getDriver()
+	{
+		return this.driver;
+	}
+	
+	public void setDriver(String driver)
+	{
+		if(this.db != null)
+		{
+			dbDisconnect();
+			this.db = null;
+		}
+
+		this.driver = driver;
+
 		try {
-			Class.forName(driver).newInstance();
+			Class.forName(driver);
 		}
 		catch (ClassNotFoundException e) {
 			bot.sendErrorEvent("DBHandler.DBHandler","ClassNotFoundException",e.getMessage());
 			bot.sendErrorEvent("DBHandler.DBHandler","problem","Could not locate database driver.");
 		}
-		catch (InstantiationException e) {
-			bot.sendErrorEvent("DBHandler.DBHandler","InstantiationException",e.getMessage());
-		}
-		catch (IllegalAccessException e) {
-			bot.sendErrorEvent("DBHandler.DBHandler","IllegalAccessException",e.getMessage());
-		}
+	}
+	
+	public String getUrl()
+	{
+		return url;
+	}
+	
+	public void setUrl(String url)
+	{
 		this.url = url;
-		this.bot = bot;
+	}
+	
+	public void init() {
 		
-		dbConnect();
 	}
 	
 	public Connection getConnection()
 	{
+		if(db == null)
+		{
+			dbConnect();
+		}
 		return db;
 	}
 	
 	public void dbConnect() {
-		try {	
+		try {
+			log.info("Connecting to database");
 			db = DriverManager.getConnection(url);
 		}
 		catch (SQLException e) {
+			log.error("Failed to connect to database", e);
 			bot.sendErrorEvent("DBHandler.dbConnect", "SQLException", e.getMessage());
 		}
 	}

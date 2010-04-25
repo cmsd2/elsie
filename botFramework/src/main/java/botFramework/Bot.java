@@ -40,9 +40,14 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.util.Locale;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.*;
 
 public class Bot extends Thread implements IBot {
+	private static final Log log = LogFactory.getLog(Bot.class);
+
 	private final String version = "0.63 2003-02-23";
 	private final String description = "The Elsie Bot Framework";
 	private final String environment;
@@ -64,7 +69,7 @@ public class Bot extends Thread implements IBot {
 	private BufferedReader receiver;			//Input object
 	private BufferedWriter sender;				//Output object
 
-	private IrcProtocol irc;					//IRC protocol object
+	private IrcProtocol irc = new IrcProtocol();					//IRC protocol object
 
 	//Listeners
 	private Set<IIrcListener> ircListeners = new HashSet<IIrcListener>();
@@ -75,8 +80,8 @@ public class Bot extends Thread implements IBot {
 	private IEventSource<IErrorEvent> errorEventSource;
 	private IEventSource<IBotEvent> botEventSource;
 	
-	private Deque<String> queuedCommands;
-	private Deque<BotMessage> queuedMessages;
+	private Deque<String> queuedCommands = new LinkedList<String>();
+	private Deque<BotMessage> queuedMessages = new LinkedList<BotMessage>();
 	
 	private Timer messageTimer;
 	
@@ -85,31 +90,29 @@ public class Bot extends Thread implements IBot {
 	private String encoding;
 	
 	//Mode is the join mode on the server - i.e. invisible etc - see RFC
-	public Bot(List<String> nicks, List<String> servers, int port, int mode, String realname, String encoding) {
-		this.nicks = nicks;
+	public Bot()
+	{
+		environment = System.getProperty("os.name") + " "
+		+ System.getProperty("os.version") + " "
+		+ System.getProperty("os.arch") + " "
+		+ "[Java " + System.getProperty("java.version") + "]";
+
+		errorEventSource = new EventSource<IErrorEvent>(this, null);
+		ircEventSource = new EventSource<IIrcEvent>(this, errorEventSource);
+		botEventSource = new EventSource<IBotEvent>(this, errorEventSource);
+	}
+	
+	public void init()
+	{
 		currentNick = 0;
 		myNick = (String)nicks.get(currentNick);
-		this.servers = servers;
 		currentServer = 0;
-		this.port = port;
-		this.realname = realname;
-		this.mode = mode;
-		this.encoding = encoding;
-		
-		environment = System.getProperty("os.name") + " "
-			+ System.getProperty("os.version") + " "
-			+ System.getProperty("os.arch") + " "
-			+ "[Java " + System.getProperty("java.version") + "]";
 			
 		df = DateFormat.getDateTimeInstance(DateFormat.FULL,DateFormat.LONG,Locale.US);
 		
 		messageTimer = new Timer();
 		
 		consecutiveErrors = 0;
-		
-		errorEventSource = new EventSource<IErrorEvent>(this, null);
-		ircEventSource = new EventSource<IIrcEvent>(this, errorEventSource);
-		botEventSource = new EventSource<IBotEvent>(this, errorEventSource);
 		
 		try {
 			InetAddress localhost = InetAddress.getLocalHost();
@@ -119,11 +122,6 @@ public class Bot extends Thread implements IBot {
 			sendErrorEvent("Bot.Bot","UnknownHostException",e.getMessage());
 			hostname = "localhost";
 		}
-		
-		irc = new IrcProtocol();
-		
-		queuedCommands = new LinkedList<String> ();
-		queuedMessages = new LinkedList<BotMessage>();
 		
 		ircEventSource.add(getIrcListener());
 	}
@@ -142,6 +140,66 @@ public class Bot extends Thread implements IBot {
 			};
 		}
 		return ircListener;
+	}
+	
+	public String getRealName()
+	{
+		return this.realname;
+	}
+	
+	public void setRealName(String realName)
+	{
+		this.realname = realName;
+	}
+	
+	public String getEncoding()
+	{
+		return this.encoding;
+	}
+	
+	public void setEncoding(String encoding)
+	{
+		this.encoding = encoding;
+	}
+	
+	public int getPort()
+	{
+		return port;
+	}
+	
+	public void setPort(int port)
+	{
+		this.port = port;
+	}
+	
+	public int getMode()
+	{
+		return mode;
+	}
+	
+	public void setMode(int mode)
+	{
+		this.mode = mode;
+	}
+	
+	public List<String> getNicks()
+	{
+		return nicks;
+	}
+	
+	public void setNicks(List<String> nicks)
+	{
+		this.nicks = nicks;
+	}
+	
+	public List<String> getServers()
+	{
+		return servers;
+	}
+	
+	public void setServers(List<String> servers)
+	{
+		this.servers = servers;
 	}
 	
 	public String toString()
@@ -172,17 +230,23 @@ public class Bot extends Thread implements IBot {
 	public void sendIRCEvent(IIrcMessage msg) {
 		IIrcEvent event = new IrcEvent(this, msg);
 		
+		log.info("Sending IRC event " + event);
+		
 		ircEventSource.sendEvent("Bot.sendIrcEvent", event);
 	}
 
 	public void sendBotEvent(String source, String[] botCommand, boolean isPrivate) {
 		IBotEvent event = new BotEvent(this, source, botCommand, isPrivate);
+		
+		log.info("Sending Bot event " + event);
 
 		botEventSource.sendEvent("Bot.sendBotEvent", event);
 	}
 
 	public void sendErrorEvent(String module, String type, String message) {
 		ErrorEvent event = new ErrorEvent(this, module, type, message);
+		
+		log.info("Sending Error event " + event);
 
 		errorEventSource.sendEvent(module, event);
 	}
@@ -195,6 +259,7 @@ public class Bot extends Thread implements IBot {
 		boolean successful = false;
 		currentServer--;
 		do {
+			log.info("Connecting");
 			sendErrorEvent("Bot.run","problem","Connecting...");
 			currentServer++;
 			if (currentServer == servers.size()) {
@@ -238,14 +303,17 @@ public class Bot extends Thread implements IBot {
 				sendCommands();
 			}
 			catch (SocketTimeoutException e) {
+				log.error("socket timeout while running", e);
 				sendErrorEvent("Bot.run","SocketTimeoutException",e.getMessage());
 				reconnect("Read timeout.");
 			}
 			catch (IOException e) {
+				log.error("ioexception while running", e);
 				sendErrorEvent("Bot.run","IOException",e.getMessage());
 				reconnect("Read error.");
 			}
 			catch (InterruptedException e) {
+				log.error("interrupted while running", e);
 				sendErrorEvent("Bot.run","InterruptedException",e.getMessage());
 			}
 		}
@@ -267,10 +335,12 @@ public class Bot extends Thread implements IBot {
 			}
 		}
 		catch (SocketTimeoutException e) {
+			log.error("socket timeout while connecting", e);
 			sendErrorEvent("Bot.connect","SocketTimeoutException",e.getMessage());
 			return false;
 		}
 		catch (IOException e) {
+			log.error("error while connecting", e);
 			sendErrorEvent("Bot.connect","IOException",e.getMessage());
 			return false;
 		}
@@ -278,11 +348,12 @@ public class Bot extends Thread implements IBot {
 	}
 
 	public synchronized void disconnect(String reason) throws IOException {
+		log.info("Disconnecting");
 		for(IChannel c: channels)
 		{
 			c.part();
 		}
-		
+		log.info("Closing server connection");
 		sender.write(irc.quit(reason));
 		sender.flush();
 		
@@ -304,6 +375,7 @@ public class Bot extends Thread implements IBot {
 		boolean successful = false;
 		currentServer--;
 		do {
+			log.info("Reconnecting");
 			sendErrorEvent("Bot.reconnect","problem","Reconnecting...");
 			nextServer();
 			successful = connect();
@@ -342,10 +414,12 @@ public class Bot extends Thread implements IBot {
 			sender.write(string);
 		}
 		catch(SocketTimeoutException e) {
+			log.error("socket timeout while writing", e);
 			sendErrorEvent("Bot.send","SocketTimeoutException",e.getMessage());
 			return false;
 		}
 		catch (IOException e) {
+			log.error("ioexception while writing", e);
 			sendErrorEvent("Bot.send","IOException",e.getMessage());
 			return false;
 		}
@@ -356,6 +430,7 @@ public class Bot extends Thread implements IBot {
 	 * @see botFramework.IBot#enqueueCommand(java.lang.String)
 	 */
 	public synchronized void enqueueCommand(String command) {
+		log.debug("enqueing command " + command);
 		queuedCommands.add(command);
 	}
 	
@@ -370,6 +445,7 @@ public class Bot extends Thread implements IBot {
 			success = send(command);
 			if (success == false) {
 				queuedCommands.addFirst(command);
+				log.error("error sending command. will reconnect and retry");
 				sendErrorEvent("Bot.sendCommands","problem","Could not send - reconnecting");
 				reconnect("Write error!");
 				return;
@@ -379,9 +455,11 @@ public class Bot extends Thread implements IBot {
 			sender.flush();
 		}
 		catch (SocketTimeoutException e) {
+			log.error("socket timeout while flushing", e);
 			sendErrorEvent("Bot.sendCommands","SocketTimeoutException",e.getMessage());
 		}
 		catch (IOException e) {
+			log.error("ioexception while flushing", e);
 			sendErrorEvent("Bot.sendCommands","IOException",e.getMessage());
 			reconnect("Write error!");
 		}
@@ -408,9 +486,11 @@ public class Bot extends Thread implements IBot {
 				
 
 	public void respondToIrcEvent(IIrcEvent event) {
+		log.info("Responding to event " + event);
 		IIrcMessage command = event.getIRCMessage();
 		if (command.getCommand().equalsIgnoreCase("PING")) {
 			consecutiveErrors = 0;
+			log.info("Sending pong");
 			enqueueCommand(irc.pong(hostname));
 		}
 		else if (command.getCommand().equalsIgnoreCase("ERROR")) {
@@ -421,12 +501,14 @@ public class Bot extends Thread implements IBot {
 			reconnect("IRC Error!");
 		}
 		else if (command.getCommand().equals("433")) {		//nick collision
+			log.info("Nick collision. Cycling nicks");
 			currentNick++;
 			if (currentNick == nicks.size()) {
 				currentNick = 0;
 			}
 			myNick = (String)nicks.get(currentNick);
 			enqueueCommand(irc.nick(myNick));
+			log.info("(Re)Joining channels");
 			for(IChannel c: channels)
 			{
 				c.join();
@@ -451,10 +533,6 @@ public class Bot extends Thread implements IBot {
 	
 	public String getNick() {
 		return myNick;
-	}
-	
-	public String getEncoding() {
-		return encoding;
 	}
 	
 	public String getHostname() {

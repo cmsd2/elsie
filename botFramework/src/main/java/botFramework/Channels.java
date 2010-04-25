@@ -3,6 +3,9 @@ package botFramework;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IBotEvent;
 import botFramework.interfaces.IBotListener;
@@ -19,6 +22,8 @@ import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IIrcListener;
 
 public class Channels implements IEventSink, IChannels {
+
+	private static final Log log = LogFactory.getLog(Channels.class);
 
 	private IBot bot;
 	private EventBridge eventHandler;
@@ -56,11 +61,13 @@ public class Channels implements IEventSink, IChannels {
 	{
 		if(this.bot != null)
 		{
+			log.info("Unsubscribing from irc events from bot " + bot);
 			this.bot.getIrcEvents().remove(getIrcListener());
 		}
 		this.bot = bot;
 		if(this.bot != null)
 		{
+			log.info("Subscribing to irc events from bot " + bot);
 			this.bot.getIrcEvents().add(getIrcListener());
 		}
 	}
@@ -77,11 +84,13 @@ public class Channels implements IEventSink, IChannels {
 	
 	public void addChannel(IChannel channel)
 	{
+		log.info("Adding channel " + channel + " to channel group");
 		chanMap.put(channel.getChannel(), channel);
 	}
 	
 	public void removeChannel(IChannel channel)
 	{
+		log.info("Removing channel " + channel + " from channel group");
 		chanMap.remove(channel.getChannel());
 	}
 	
