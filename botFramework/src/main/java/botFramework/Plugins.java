@@ -33,7 +33,18 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 	
 	public void init() throws Exception
 	{
+		ClassLoader prevClassLoader = Thread.currentThread().getContextClassLoader();
 		ClassLoader loader = getPluginClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(loader);
+			doInit();
+		} finally {
+			Thread.currentThread().setContextClassLoader(prevClassLoader);
+		}
+	}
+	
+	public void doInit() throws Exception
+	{
 		Class c = Class.forName("elsie.plugins.Version", true, loader);
 		log.info("Found version plugin " + c + " in classpath");
 		this.pluginContext = new ClassPathXmlApplicationContext(new String[] {

@@ -2,6 +2,7 @@ package elsie.util;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -95,6 +96,8 @@ public class LibDirClassLoader extends AbstractClassLoader {
 				log.debug("Found class " + name + " in jar " + jarPath);
 				
 				return defineClass (name, data, 0, data.length);
+			} catch (FileNotFoundException e) {
+				log.debug("No entry " + fileSystemName + " in jar " + jarPath);
 			} catch (IOException e) {
 				log.error("Error reading jar " + jarPath, e);
 			}
