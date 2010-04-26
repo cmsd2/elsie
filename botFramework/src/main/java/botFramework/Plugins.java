@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -38,7 +39,9 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 		this.pluginContext = new ClassPathXmlApplicationContext(new String[] {
 			"plugins.xml"
 		}, c, context);
-		Object v = pluginContext.getBean("version");
+		ObjectFactory f = (ObjectFactory) pluginContext.getBean("versionFactory");
+		log.info("Found version plugin factory " + f);
+		Object v = f.getObject();
 		log.info("Plugin version " + v.getClass() + " loaded with " + v.getClass().getClassLoader());
 	}
 	

@@ -5,6 +5,13 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+	<bean id="versionFactory" class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+		<property name="targetBeanName">
+			<idref local="version" />
+		</property>
+		<property name="beanClassLoader" ref="pluginClassLoader"/>
+	</bean>
 
-	<bean id="version" class="elsie.plugins.Version"/>
+
+	<bean id="version" class="elsie.plugins.Version" scope="prototype"/>
 </beans>
