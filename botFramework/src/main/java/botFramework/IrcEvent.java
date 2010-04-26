@@ -31,4 +31,9 @@ public class IrcEvent extends EventObject implements IIrcEvent {
 	public String toString() {
 		return msg.getPrefix() + "|" + msg.getCommand() + "|" + msg.getEscapedParams();
 	}
+	
+	public String getBotCommandName()
+	{
+		return null;
+	}
 }

@@ -22,6 +22,10 @@ public class ChanEvent extends EventObject implements IChanEvent{
 		
 		this.msg = msg;
 	}
+	public String getBotCommandName()
+	{
+		return msg.getCommand();
+	}
 	public IChannel getChannelSource()
 	{
 		return (IChannel)super.getSource();

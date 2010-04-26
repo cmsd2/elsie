@@ -1,4 +1,4 @@
-package elsie.plugins;
+package elsie.plugins.commands;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;
+import elsie.plugins.AbstractPlugin;
 import elsie.util.Beans;
 
 public class MissingCommand extends AbstractPlugin {

@@ -27,8 +27,10 @@ package botFramework;
  * channels responding to the same PRIVATE bot command.
  */
 
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,7 +57,7 @@ public class Channel implements IChannel, IEventSink {
 	
 	private String channel;
 	
-	private Hashtable userStatus;
+	private Map<String,User> userStatus = new HashMap<String, User>();
 	private IrcProtocol irc;
 	
 	private IEventSource<IErrorEvent> errorEvents;
@@ -167,20 +169,20 @@ public class Channel implements IChannel, IEventSink {
 		chanEvents.sendEvent("Channel.sendChanEvent", new ChanEvent(this, msg));
 	}
 
-	public void sendChanBotEvent(String source, String[] botCommand, boolean isPrivate) {
+	public void sendChanBotEvent(String source, String[] botCommand, boolean isPrivate, IIrcMessage msg) {
 
-		boolean responded = chanBotEvents.sendEvent("Channel.sendChanBotEvent", new ChanBotEvent(this, source, botCommand, isPrivate));
+		boolean responded = chanBotEvents.sendEvent("Channel.sendChanBotEvent", new ChanBotEvent(this, source, botCommand, isPrivate, msg));
 		
 		if (responded == false) {
-			sendChanBotUnknownCmdEvent(source, botCommand, isPrivate);
+			sendChanBotUnknownCmdEvent(source, botCommand, isPrivate, msg);
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#sendChanBotUnknownCmdEvent(java.lang.String, java.lang.String[], boolean)
 	 */
-	public void sendChanBotUnknownCmdEvent(String source, String[] botCommand, boolean isPrivate) {
-		IChanBotEvent event = new ChanBotEvent(this, source, botCommand, isPrivate);
+	public void sendChanBotUnknownCmdEvent(String source, String[] botCommand, boolean isPrivate, IIrcMessage msg) {
+		IChanBotEvent event = new ChanBotEvent(this, source, botCommand, isPrivate, msg);
 		
 		unknownCommandEvents.sendEvent("Channel.sendChanBotUnknownCmdEvent", event);
 	}
@@ -206,8 +208,8 @@ public class Channel implements IChannel, IEventSink {
 		}
 		
 		if (((msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.isPrivate())
-			| msg.getCommand().equalsIgnoreCase("NICK")
-			| msg.getCommand().equalsIgnoreCase("QUIT")) & userStatus.containsKey(msg.getPrefixNick())) {
+			|| msg.getCommand().equalsIgnoreCase("NICK")
+			|| msg.getCommand().equalsIgnoreCase("QUIT")) & userStatus.containsKey(msg.getPrefixNick())) {
 				sendChanEvent(event.getIRCMessage());
 		}
 		
@@ -225,10 +227,10 @@ public class Channel implements IChannel, IEventSink {
 		
 		if (msg.getParams().length >= 1) {
 			if ((msg.getCommand().equalsIgnoreCase("MODE")
-				| msg.getCommand().equalsIgnoreCase("PRIVMSG")
-				| msg.getCommand().equalsIgnoreCase("TOPIC")
-				| msg.getCommand().equalsIgnoreCase("KICK")
-				| msg.getCommand().equalsIgnoreCase("CTCP_ACTION"))
+				|| msg.getCommand().equalsIgnoreCase("PRIVMSG")
+				|| msg.getCommand().equalsIgnoreCase("TOPIC")
+				|| msg.getCommand().equalsIgnoreCase("KICK")
+				|| msg.getCommand().equalsIgnoreCase("CTCP_ACTION"))
 				&
 				msg.getParams()[0].equalsIgnoreCase(channel)
 				) {
@@ -236,10 +238,10 @@ public class Channel implements IChannel, IEventSink {
 				sendChanEvent(event.getIRCMessage());
 			}
 			else if ((msg.getCommand().equalsIgnoreCase("JOIN")
-				| msg.getCommand().equalsIgnoreCase("PART"))	
+				|| msg.getCommand().equalsIgnoreCase("PART"))	
 				&
 				(msg.getParams()[0].equalsIgnoreCase(channel)
-				| msg.getEscapedParams().equalsIgnoreCase(channel)
+				|| msg.getEscapedParams().equalsIgnoreCase(channel)
 				)) {
 				
 				sendChanEvent(event.getIRCMessage());
@@ -248,10 +250,10 @@ public class Channel implements IChannel, IEventSink {
 		
 		if ((msg.getCommand().equalsIgnoreCase("PRIVMSG") & msg.getEscapedParams().matches(bot.getNick() + ":? +.*")
 			& msg.getParams()[0].equalsIgnoreCase(channel))
-			| (msg.getCommand().equalsIgnoreCase("PRIVMSG") & !msg.getPrefixNick().equalsIgnoreCase(bot.getNick()) & msg.isPrivate() & userStatus.containsKey(msg.getPrefixNick()))) {
+			|| (msg.getCommand().equalsIgnoreCase("PRIVMSG") & !msg.getPrefixNick().equalsIgnoreCase(bot.getNick()) & msg.isPrivate() & userStatus.containsKey(msg.getPrefixNick()))) {
 			String temp = msg.getEscapedParams().replaceFirst(bot.getNick() + ":? +","");
 			String[] botCmd = temp.split(" +");
-			sendChanBotEvent(msg.getPrefixNick(),botCmd,msg.isPrivate());
+			sendChanBotEvent(msg.getPrefixNick(),botCmd,msg.isPrivate(),event.getIRCMessage());
 		}
 		
 		return true;
@@ -389,8 +391,8 @@ public class Channel implements IChannel, IEventSink {
 	/* (non-Javadoc)
 	 * @see botFramework.IChannel#getUsers()
 	 */
-	public Enumeration getUsers() {
-		return userStatus.keys();
+	public Set<String> getUsers() {
+		return userStatus.keySet();
 	}
 	
 	/* (non-Javadoc)

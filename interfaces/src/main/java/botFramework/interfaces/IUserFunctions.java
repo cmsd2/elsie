@@ -23,4 +23,7 @@ public interface IUserFunctions {
 
 	public abstract boolean annoyUser(String username);
 
+	public abstract boolean isAngry();
+	
+	public abstract void setAngry(boolean angry);
 }

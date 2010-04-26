@@ -1,9 +1,11 @@
-package elsie.plugins;
+package elsie.plugins.commands;
 
 import java.util.Hashtable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import elsie.plugins.AbstractPlugin;
 
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChanBotListener;

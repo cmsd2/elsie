@@ -7,12 +7,14 @@
  * Window>Preferences>Java>Code Generation.
  */
 
-package elsie.plugins;
+package elsie.plugins.commands;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import elsie.plugins.AbstractPlugin;
 
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChanListener;

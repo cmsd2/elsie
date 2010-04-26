@@ -12,18 +12,21 @@ import java.util.EventObject;
 
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.IChannel;
+import botFramework.interfaces.IIrcMessage;
 
 public class ChanBotEvent extends EventObject implements IChanBotEvent {
 	String cmdSource;
 	String[] botCmd;
 	boolean isPrivate;
+	private IIrcMessage msg;
 	
-	public ChanBotEvent(Object source, String cmdSource, String[] botCmd, boolean isPrivate) {
+	public ChanBotEvent(Object source, String cmdSource, String[] botCmd, boolean isPrivate, IIrcMessage msg) {
 		super(source);
 		
 		this.cmdSource = cmdSource;
 		this.botCmd = botCmd;
 		this.isPrivate = isPrivate;
+		this.msg = msg;
 	}
 	/* (non-Javadoc)
 	 * @see botFramework.IChanBotEvent#getCommandSource()
@@ -36,6 +39,11 @@ public class ChanBotEvent extends EventObject implements IChanBotEvent {
 	 */
 	public String[] getBotCommand() {
 		return botCmd;
+	}
+	
+	public String getBotCommandName()
+	{
+		return botCmd[0];
 	}
 	/* (non-Javadoc)
 	 * @see botFramework.IChanBotEvent#getIsPrivate()
@@ -53,5 +61,10 @@ public class ChanBotEvent extends EventObject implements IChanBotEvent {
 	public IChannel getChannelSource()
 	{
 		return (IChannel)super.getSource();
+	}
+
+	@Override
+	public IIrcMessage getIRCMessage() {
+		return msg;
 	}
 }

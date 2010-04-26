@@ -1,6 +1,7 @@
 package botFramework;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,19 +10,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import elsie.util.Beans;
-
 import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.ICommandsMap;
+import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IPlugins;
+import elsie.util.Beans;
 
 public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware {
 	private static final Log log = LogFactory.getLog(Plugins.class);
 
 	private ClassLoader loader = null;
 	private String loaderId;
-	private Hashtable<String, String> chanBotPluginClasses = new Hashtable<String, String> ();
-	private Hashtable<Class, Object> chanBotPlugins = new Hashtable<Class, Object>();
+	private Map<String, String> chanBotPluginClasses = new HashMap<String, String> ();
+	private Map<Class, Object> chanBotPlugins = new HashMap<Class, Object>();
 
 	private ApplicationContext context;
 	private ApplicationContext pluginContext;
@@ -91,7 +92,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 		return loader;
 	}
 	
-	public Hashtable<String, String> getChanBotPluginClasses() {
+	public Map<String, String> getChanBotPluginClasses() {
 		return chanBotPluginClasses;
 	}
 	
@@ -139,48 +140,28 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 		this.loader = null;
 		this.chanBotPlugins.clear();
 	}
-	
-	public <T> String[] getCommand(Object event)
-	{
-		if(event instanceof IChanBotEvent)
-		{
-			return ((IChanBotEvent)event).getBotCommand();
-		} else {
-			return null;
-		}
-	}
 
 	@Override
-	public <T> Object findAndLoadPlugin(T event) {
+	public <T extends IIrcEvent> Object findAndLoadPlugin(T event) {
 		System.out.println("finding plugin for " + event);
 		
-		String cmds[] = getCommand(event);
+		String cmd = event.getBotCommandName();
+		Object plugin = null;
 		
-		if(cmds == null) {
-			System.out.println("couldn't get command from event " + event);
-		} else if(cmds.length == 0) {
-			System.out.println("command too short");
-			return null;
-		} else if(cmds.length == 1) {
-			cmds = cmds[0].split(" ");
-		}
-		
-		String cmd;
-		Object plugin;
-		
-		for(int i = 0; i < cmds.length; i++)
+		if(cmd != null)
 		{
-			cmd = cmds[i];
-			
 			plugin = findPluginForCommand(cmd);
 		}
 
-		plugin = loadPlugin(fallbackHandler);
+		if(plugin == null)
+		{
+			plugin = loadPlugin(fallbackHandler);
+		}
 		
 		return plugin;
 	}
 	
-	public <T,K> K findAndLoadPlugin(T event, Class<K> iface)
+	public <T extends IIrcEvent,K> K findAndLoadPlugin(T event, Class<K> iface)
 	{
 		Object plugin = findAndLoadPlugin(event);
 		

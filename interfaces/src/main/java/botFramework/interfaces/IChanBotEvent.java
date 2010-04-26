@@ -1,6 +1,6 @@
 package botFramework.interfaces;
 
-public interface IChanBotEvent extends IBotEvent {
+public interface IChanBotEvent extends IBotEvent, IChanEvent, IIrcEvent {
 
 	public abstract String getCommandSource();
 

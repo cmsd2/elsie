@@ -1,4 +1,4 @@
-package elsie.plugins;
+package elsie.plugins.commands;
 
 /**
  * @author sffubs
@@ -11,6 +11,8 @@ package elsie.plugins;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import elsie.plugins.AbstractPlugin;
 
 import botFramework.interfaces.*;
 

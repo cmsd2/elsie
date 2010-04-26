@@ -1,6 +1,6 @@
 package botFramework.interfaces;
 
-public interface IChanEvent {
+public interface IChanEvent extends IIrcEvent {
 	public IIrcMessage getIRCMessage();
 	
 	public IChannel getChannelSource();

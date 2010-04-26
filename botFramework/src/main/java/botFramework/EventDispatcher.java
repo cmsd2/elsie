@@ -1,20 +1,17 @@
 package botFramework;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import botFramework.interfaces.IChanBotEvent;
-import botFramework.interfaces.IChanBotListener;
 import botFramework.interfaces.IEventListener;
-import botFramework.interfaces.IIrcMessage;
-import botFramework.interfaces.IPlugins;
 
 public abstract class EventDispatcher<T> implements IEventListener<T> {
 	private static final Log log = LogFactory.getLog(EventDispatcher.class);
 
-	private Hashtable<String, IEventListener<T>> channelEventHandlers = new Hashtable<String, IEventListener<T>>();
+	private Map<String, IEventListener<T>> channelEventHandlers = new HashMap<String, IEventListener<T>>();
 	
 	public EventDispatcher()
 	{

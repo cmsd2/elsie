@@ -37,7 +37,8 @@ public class UserFunctions implements IUserFunctions {
 	PreparedStatement queryUniqueIdents;
 	PreparedStatement queryLinks;
 	PreparedStatement queryBotMessage;
-	
+	PreparedStatement queryBotState;
+	PreparedStatement setBotAngry;
 		
 	public UserFunctions () {
 	}
@@ -54,6 +55,8 @@ public class UserFunctions implements IUserFunctions {
 			queryAddAlias = mysql.getConnection().prepareStatement("INSERT INTO `aliases` VALUES(?,?)");
 			queryUniqueIdents = mysql.getConnection().prepareStatement("SELECT * FROM `idents` WHERE `Unique`=\"Yes\"");
 			queryBotMessage = mysql.getConnection().prepareStatement("SELECT * FROM `errors` WHERE name=?");
+			queryBotState = mysql.getConnection().prepareStatement("SELECT * FROM `bot_state`");
+			setBotAngry = mysql.getConnection().prepareStatement("UPDATE `bot_state` SET angry = ?");
 		}
 		catch (SQLException e) {
 			bot.sendErrorEvent("UserFunctions.UserFunctions","SQLException",e.getMessage());
@@ -379,5 +382,25 @@ public class UserFunctions implements IUserFunctions {
 			d = 0;
 		}
 		bot.enqueueMessage(target,string,(long)string.length() * typingSpeed * d);
+	}
+
+	@Override
+	public boolean isAngry() {
+		try {
+			ResultSet rs = queryBotState.executeQuery();
+			return rs.getBoolean("angry");
+		} catch (SQLException e) {
+			throw new RuntimeException("Error getting bot state", e);
+		}
+	}
+
+	@Override
+	public void setAngry(boolean angry) {
+		try {
+			setBotAngry.setBoolean(1, angry);
+			setBotAngry.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException("Error setting bot state", e);
+		}
 	}
 }
