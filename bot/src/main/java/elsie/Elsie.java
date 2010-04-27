@@ -1,5 +1,7 @@
 package elsie;
 
+import java.net.URL;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -14,6 +16,8 @@ class Elsie {
 	private static final Log log = LogFactory.getLog(Elsie.class);
 
 	public static void main(String[] args) {
+		URL url = Elsie.class.getClassLoader().getResource("log4j.xml");
+		DOMConfigurator.configure(url);
 
 		ApplicationContext rootContext = new ClassPathXmlApplicationContext(
 				new String[] {"bootstrap.xml", "botFramework.xml"});
