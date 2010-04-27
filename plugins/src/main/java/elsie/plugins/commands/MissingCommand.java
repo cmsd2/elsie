@@ -20,7 +20,7 @@ public class MissingCommand extends AbstractPlugin {
 	
 	public void prepare() throws SQLException
 	{
-		queryPlugins = getDatabase().getConnection().prepareStatement("select classname from plugins where command = ?");
+		queryPlugins = getDatabase().getConnection().prepareStatement("select classname, beanId from plugins where command = ?");
 	}
 	
 	@Override
@@ -38,10 +38,20 @@ public class MissingCommand extends AbstractPlugin {
 			
 			if(rs.next()) {
 				String className = rs.getString(1);
+				String beanId = rs.getString(2);
+
+				Object plugin = null;
+
+				if(className != null)
+				{
+					log.info("Command " + command + " mapped to class " + className);
 				
-				log.info("Found plugin " + className);
-				
-				Object plugin = getPlugins().loadPlugin(className);
+					plugin = getPlugins().loadPluginBean(className);
+				} else if(beanId != null) {
+					log.info("Command " + command + " mapped to beanId " + beanId);
+					
+					plugin = getApplicationContext().getBean(beanId);
+				}
 				
 				if(plugin != null)
 				{

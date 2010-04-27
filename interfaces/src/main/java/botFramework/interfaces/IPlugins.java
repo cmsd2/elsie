@@ -14,7 +14,9 @@ public interface IPlugins {
 	
 	void reloadPlugins();
 	
-	Object loadPlugin(String className);
+	Object loadPluginBean(String beanId);
+	
+	Object loadPlugin(String className) throws Exception;
 
 	public ICommandsMap getCommandsMap();
 }

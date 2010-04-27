@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import botFramework.interfaces.ICommandsMap;
 import botFramework.interfaces.IIrcEvent;
@@ -112,7 +113,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 
 		if(plugin == null && fallbackHandler != null)
 		{
-			plugin = loadPlugin(fallbackHandler);
+			plugin = loadPluginBean(fallbackHandler);
 		}
 		
 		return plugin;
@@ -140,7 +141,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 			return null;
 		}
 
-		plugin = loadPlugin(cname);
+		plugin = loadPluginBean(cname);
 
 		if(plugin == null)
 		{
@@ -161,11 +162,18 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 			return Beans.findInterface(plugin, iface);
 	}
 	
-	public Object loadPlugin(String cname)
+	public Object loadPluginBean(String beanId)
 	{
-		log.info("trying lookup of " + cname);
+		log.info("trying lookup of " + beanId);
 		
-		return pluginFactory.getPluginContext().getBean(cname);
+		return pluginFactory.getPluginContext().getBean(beanId);
+	}
+	
+	public Object loadPlugin(String className) throws Exception
+	{
+		Object o = Class.forName(className, true, pluginFactory.getPluginClassLoader());
+		((AbstractApplicationContext)context).getBeanFactory().autowireBean(o);
+		return o;
 	}
 
 }

@@ -5,9 +5,83 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean id="version"
-			factory-bean="pluginFactory"
-			factory-method="createInstance">
-		<constructor-arg value="elsie.plugins.Version"/>
+	<bean id="channel.311" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.channel.Irc311"/>
+	</bean>
+	
+	<bean id="channel.353" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.channel.Irc353"/>
+	</bean>
+	
+	<bean id="channel.join" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.channel.Join"/>
+	</bean>
+	
+	<bean id="channel.nick" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.channel.Nick"/>
+	</bean>
+	
+	<bean id="command.addPlugin" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.AddPlugin"/>
+	</bean>
+	
+	<bean id="command.angry" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Angry"/>
+	</bean>
+	
+	<bean id="command.help" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Help"/>
+	</bean>
+	
+	<bean id="command.invalid" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.InvalidCommand"/>
+	</bean>
+	
+	<bean id="command.join" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.JoinChannel"/>
+	</bean>
+	
+	<bean id="command.lastLinks" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Lastlinks"/>
+	</bean>
+	
+	<bean id="command.memUsage" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.MemUsage"/>
+	</bean>
+	
+	<bean id="command.missing" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.MissingCommand"/>
+	</bean>
+	
+	<bean id="command.part" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.PartChannel"/>
+	</bean>
+	
+	<bean id="command.refresh" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Refresh"/>
+	</bean>
+	
+	<bean id="command.rehash" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Rehash"/>
+	</bean>
+	
+	<bean id="command.reloadPlugins" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.ReloadPlugins"/>
+	</bean>
+	
+	<bean id="command.removePlugin" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.RemovePlugin"/>
+	</bean>
+	
+	<bean id="command.showHash" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.ShowHash"/>
+	</bean>
+	
+	<bean id="command.transcriber" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Transcriber"/>
+	</bean>
+	
+	<bean id="command.version" factory-bean="pluginFactory" factory-method="createInstance">
+		<constructor-arg value="elsie.plugins.command.Version"/>
 	</bean>
 </beans>
