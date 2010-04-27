@@ -5,6 +5,8 @@ package botFramework;
 
 import java.util.TimerTask;
 
+import elsie.util.IrcMessage;
+
 import botFramework.interfaces.IBot;
 
 class BotMessage extends TimerTask {

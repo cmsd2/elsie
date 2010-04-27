@@ -1,4 +1,4 @@
-package botFramework;
+package elsie.util;
 
 import botFramework.interfaces.IIrcMessage;
 

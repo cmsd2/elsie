@@ -14,8 +14,13 @@ public class FileSystemClassLoader extends AbstractClassLoader {
 
 	private File root;
 
-	public FileSystemClassLoader()
+	public FileSystemClassLoader(String rootDir)
 	{
+		this.root = new File(rootDir);
+		if(!this.root.isDirectory())
+		{
+			throw new IllegalArgumentException("Can't find config dir " + this.root);
+		}
 	}
 	
 	public String getClasses()

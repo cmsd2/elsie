@@ -8,48 +8,10 @@ import botFramework.interfaces.IChanListener;
 import botFramework.interfaces.IChannels;
 import botFramework.interfaces.IEventListener;
 import botFramework.interfaces.IIrcMessage;
-import botFramework.interfaces.IPlugins;
 
-public class ChanEventDispatcher extends EventDispatcher<IChanEvent> {
+public class ChanEventDispatcher extends DefaultEventDispatcher<IChanEvent> {
 	
 	private static final Log log = LogFactory.getLog(ChanEventDispatcher.class);
-
-	private IPlugins plugins;
-	private IChannels channels;
-	
-	public ChanEventDispatcher()
-	{
-	}
-
-	public IPlugins getPlugins()
-	{
-		return plugins;
-	}
-
-	public void setPlugins(IPlugins plugins)
-	{
-		this.plugins = plugins;
-	}
-	
-	public IChannels getChannels()
-	{
-		return channels;
-	}
-
-	public void setChannels(IChannels channels)
-	{
-		if(this.channels != null)
-		{
-			log.info("Unsubscribing to chan events from channel group " + channels);
-			this.channels.getChanEvents().remove(this);
-		}
-		this.channels = channels;
-		if(this.channels != null)
-		{
-			log.info("Subscribing to chan events from channel group " + channels);
-			this.channels.getChanEvents().add(this);
-		}
-	}
 
 	@Override
 	public String getKey(IChanEvent event) {
@@ -57,10 +19,21 @@ public class ChanEventDispatcher extends EventDispatcher<IChanEvent> {
 		return msg.getPrefix();
 	}
 
-
 	@Override
 	public IEventListener<IChanEvent> loadListener(IChanEvent event) {
 		log.info("Finding plugin to handle " + event);
-		return plugins.findAndLoadPlugin(event, IChanListener.class);
+		return getPlugins().findAndLoadPlugin(event, IChanListener.class);
+	}
+
+	@Override
+	protected void addChannelListeners(IChannels channels) {
+		log.info("Subscribing to chan events from channel group " + channels);
+		channels.getChanEvents().add(this);
+	}
+
+	@Override
+	protected void removeChannelListeners(IChannels channels) {
+		log.info("Unsubscribing to chan events from channel group " + channels);
+		channels.getChanEvents().remove(this);
 	}
 }

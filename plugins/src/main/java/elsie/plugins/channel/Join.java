@@ -3,13 +3,13 @@ package elsie.plugins.channel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import botFramework.IrcProtocol;
 import botFramework.interfaces.IChanEvent;
 import botFramework.interfaces.IChannel;
 import botFramework.interfaces.IIrcMessage;
 import botFramework.interfaces.IIrcProtocol;
 import botFramework.interfaces.IUser;
 import elsie.plugins.AbstractPlugin;
+import elsie.util.IrcProtocol;
 
 public class Join extends AbstractPlugin {
 

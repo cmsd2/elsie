@@ -43,22 +43,39 @@
 		<property name="bot" ref="bot"/>
 	</bean>
 	
-	<bean id="console" class="elsie.Console" scope="singleton">
+	<bean id="console" class="botFramework.Console" scope="singleton">
 		<property name="bot" ref="bot"/>
 		<property name="channels" ref="channels"/>
 	</bean>
 	
-	<bean id="errorConsole" class="elsie.ErrorConsole" scope="singleton">
+	<bean id="errorConsole" class="botFramework.ErrorConsole" scope="singleton">
 		<property name="bot" ref="bot"/>
 	</bean>
 	
-	<bean id="plugins" class="botFramework.Plugins" init-method="init">
+	<bean id="plugins" class="botFramework.Plugins">
+		<property name="pluginFactory">
+			<ref bean="pluginFactory"/>
+		</property>
+		<!-- <property name="fallbackHandler" value="missing"/> -->
+	</bean>
+	
+	<bean id="pluginFactory" class="botFramework.PluginFactory">
 		<property name="classLoaderId">
 			<idref bean="pluginClassLoader"/>
 		</property>
 	</bean>
+	
+	<bean id="chanEventDispatcher" class="botFramework.ChanEventDispatcher" scope="singleton">
+		<property name="plugins" ref="plugins"/>
+		<property name="channels" ref="channels"/>
+	</bean>
 		
 	<bean id="chanBotEventDispatcher" class="botFramework.ChanBotEventDispatcher" scope="singleton">
+		<property name="plugins" ref="plugins"/>
+		<property name="channels" ref="channels"/>
+	</bean>
+	
+	<bean id="chanBotUnknownCommandEventDispatcher" class="botFramework.ChanBotUnknownCommandEventDispatcher" scope="singleton">
 		<property name="plugins" ref="plugins"/>
 		<property name="channels" ref="channels"/>
 	</bean>

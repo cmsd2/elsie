@@ -1,22 +1,23 @@
 package elsie;
 
 import java.net.URL;
-import org.apache.log4j.xml.DOMConfigurator;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import elsie.util.AbstractClassLoader;
-
 import botFramework.Bot;
+import elsie.util.FileSystemClassLoader;
 
 class Elsie {
 	private static final Log log = LogFactory.getLog(Elsie.class);
 
 	public static void main(String[] args) {
-		URL url = Elsie.class.getClassLoader().getResource("log4j.xml");
+		ClassLoader configClassLoader = new FileSystemClassLoader(System.getProperty("elsie.config.dir"));
+
+		URL url = configClassLoader.getResource("log4j.xml");
 		DOMConfigurator.configure(url);
 
 		ApplicationContext rootContext = new ClassPathXmlApplicationContext(

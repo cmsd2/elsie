@@ -11,4 +11,6 @@ public interface IChanBotEvent extends IBotEvent, IChanEvent, IIrcEvent {
 	public abstract String toString();
 
 	public IChannel getChannelSource();
+	
+	public String getEventCommandId();
 }

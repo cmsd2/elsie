@@ -15,7 +15,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
-import botFramework.IrcProtocol;
+import elsie.util.IrcProtocol;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IChannel;
 import botFramework.interfaces.IDatabase;

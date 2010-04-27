@@ -43,6 +43,9 @@ import java.util.Locale;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import elsie.util.IrcMessage;
+import elsie.util.IrcProtocol;
+
 import botFramework.interfaces.*;
 
 public class Bot extends Thread implements IBot {

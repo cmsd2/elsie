@@ -5,12 +5,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import botFramework.interfaces.IChanBotEvent;
 import botFramework.interfaces.ICommandsMap;
 import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IPlugins;
@@ -19,42 +16,13 @@ import elsie.util.Beans;
 public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware {
 	private static final Log log = LogFactory.getLog(Plugins.class);
 
-	private ClassLoader loader = null;
-	private String loaderId;
-	private Map<String, String> chanBotPluginClasses = new HashMap<String, String> ();
-	private Map<Class, Object> chanBotPlugins = new HashMap<Class, Object>();
-
+	private Map<String, String> pluginBeanIds = new HashMap<String, String> ();
 	private ApplicationContext context;
-	private ApplicationContext pluginContext;
 	private String fallbackHandler;
+	private PluginFactory pluginFactory;
 	
 	public Plugins()
 	{
-	}
-	
-	public void init() throws Exception
-	{
-		ClassLoader prevClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoader loader = getPluginClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(loader);
-			doInit();
-		} finally {
-			Thread.currentThread().setContextClassLoader(prevClassLoader);
-		}
-	}
-	
-	public void doInit() throws Exception
-	{
-		Class c = Class.forName("elsie.plugins.Version", true, loader);
-		log.info("Found version plugin " + c + " in classpath");
-		this.pluginContext = new ClassPathXmlApplicationContext(new String[] {
-			"plugins.xml"
-		}, c, context);
-		ObjectFactory f = (ObjectFactory) pluginContext.getBean("versionFactory");
-		log.info("Found version plugin factory " + f);
-		Object v = f.getObject();
-		log.info("Plugin version " + v.getClass() + " loaded with " + v.getClass().getClassLoader());
 	}
 	
 	public ApplicationContext getApplicationContext()
@@ -67,61 +35,51 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 		this.context = context;
 	}
 	
+	public PluginFactory getPluginFactory()
+	{
+		return pluginFactory;
+	}
+	
+	public void setPluginFactory(PluginFactory pluginFactory)
+	{
+		this.pluginFactory = pluginFactory;
+	}
+	
 	public ICommandsMap getCommandsMap()
 	{
 		return this;
 	}
 	
-	public String getClassLoaderId()
-	{
-		return loaderId;
-	}
-	
-	public void setClassLoaderId(String loaderId)
-	{
-		this.loaderId = loaderId;
-	}
-	
-	public ClassLoader getPluginClassLoader()
-	{
-		if (loader == null)
-		{
-			loader = (ClassLoader) context.getBean(loaderId);
-			log.info("Got fresh plugin class loader " + loader);
-		}
-		return loader;
-	}
-	
 	public Map<String, String> getChanBotPluginClasses() {
-		return chanBotPluginClasses;
+		return pluginBeanIds;
 	}
 	
 	public boolean hasPluginCommand(String cmd)
 	{
-		return chanBotPluginClasses.containsKey(cmd);
+		return pluginBeanIds.containsKey(cmd);
 	}
 	
 	public String getPluginCommand(String cmd)
 	{
-		return chanBotPluginClasses.get(cmd);
+		return pluginBeanIds.get(cmd);
 	}
 	
 	public void addPluginCommand(String cmd, String cname)
 	{
-		if(chanBotPluginClasses.containsKey(cmd))
+		if(pluginBeanIds.containsKey(cmd))
 		{
 			throw new IllegalArgumentException("Can't overwrite existing command hook");
 		} else {
 			log.info("Adding plugin mapping " + cmd + " => " + cname);
-			chanBotPluginClasses.put(cmd, cname);
+			pluginBeanIds.put(cmd, cname);
 		}
 	}
 	
 	public void removePluginCommand(String cmd)
 	{
-		String cname = chanBotPluginClasses.get(cmd);
+		String cname = pluginBeanIds.get(cmd);
 		log.info("Removing plugin mapping " + cmd + " => " + cname);
-		chanBotPluginClasses.remove(cmd);
+		pluginBeanIds.remove(cmd);
 	}
 	
 	public String getFallbackHandler()
@@ -136,9 +94,8 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 	
 	public void reloadPlugins()
 	{
-		log.info("reloading plugins. throwing away " + chanBotPlugins.size() + " plugin instances and class loader");
-		this.loader = null;
-		this.chanBotPlugins.clear();
+		log.info("reloading plugins.");
+		this.pluginFactory.clear();
 	}
 
 	@Override
@@ -153,7 +110,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 			plugin = findPluginForCommand(cmd);
 		}
 
-		if(plugin == null)
+		if(plugin == null && fallbackHandler != null)
 		{
 			plugin = loadPlugin(fallbackHandler);
 		}
@@ -175,7 +132,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 	{
 		log.info("Finding plugin to handle command " + cmd);
 		Object plugin = null;
-		String cname = chanBotPluginClasses.get(cmd);
+		String cname = pluginBeanIds.get(cmd);
 		
 		if(cname != null)
 		{
@@ -208,43 +165,7 @@ public class Plugins implements IPlugins, ICommandsMap, ApplicationContextAware 
 	{
 		log.info("trying lookup of " + cname);
 		
-		try {
-			Class c = null;
-			
-			log.info("trying class load for " + cname);
-			c = Class.forName(cname, true, getPluginClassLoader());
-		
-			if(c != null)
-				return getPluginInstance(c);
-		} catch (Exception e) {
-			log.error("Failed to load plugin class " + cname, e);
-		}
-
-		return null;
-	}
-	
-	public Object getPluginInstance(Class c)
-	{
-		log.info("Getting plugin instance of " + c);
-		Object o = chanBotPlugins.get(c);
-		
-		if(o == null)
-		{
-			try {
-				o = c.newInstance();
-
-				chanBotPlugins.put(c, o);
-				
-				configurePlugin(o);
-			} catch (Exception e) {
-				e.printStackTrace(System.err);
-			}
-		}
-		
-		return o;
+		return pluginFactory.getPluginContext().getBean(cname);
 	}
 
-	public void configurePlugin(Object l)
-	{
-	}
 }

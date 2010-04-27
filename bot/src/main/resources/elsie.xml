@@ -13,25 +13,11 @@
 		</property>
 	</bean>
 	
-	<bean id="channelManager" class="elsie.ChannelManager" scope="singleton" init-method="init">
-		<property name="bot" ref="bot"/>
-		<property name="channels" ref="channels"/>
-		<property name="database" ref="database"/>
-		<property name="userFunctions">
-			<ref bean="userFunctions"/>
-		</property>
-	</bean>
-
-	<bean id="invalidCommandHandler" class="elsie.InvalidCommandHandler" scope="singleton">
-		<property name="userFunctions" ref="userFunctions"/>
-		<property name="channels" ref="channels"/>
-	</bean>
-	
 	<bean id="userFunctions" class="elsie.UserFunctions" scope="singleton" init-method="init">
 		<property name="database" ref="database"/>
 	</bean>
 
-	<bean id="inputConsole" class="elsie.InputConsole" scope="singleton" init-method="init">
+	<bean id="inputConsole" class="botFramework.InputConsole" scope="singleton" init-method="init">
 		<property name="bot" ref="bot"/>
 		<property name="channel" ref="mainChannel"/>
 	</bean>

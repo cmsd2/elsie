@@ -35,6 +35,8 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import elsie.util.IrcProtocol;
+
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IBotEvent;
 import botFramework.interfaces.IChanBotEvent;
@@ -182,7 +184,7 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#sendChanBotUnknownCmdEvent(java.lang.String, java.lang.String[], boolean)
 	 */
 	public void sendChanBotUnknownCmdEvent(String source, String[] botCommand, boolean isPrivate, IIrcMessage msg) {
-		IChanBotEvent event = new ChanBotEvent(this, source, botCommand, isPrivate, msg);
+		IChanBotEvent event = new UnknownCommandChanBotEvent(this, source, botCommand, isPrivate, msg);
 		
 		unknownCommandEvents.sendEvent("Channel.sendChanBotUnknownCmdEvent", event);
 	}

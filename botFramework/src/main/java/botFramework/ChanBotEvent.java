@@ -67,4 +67,9 @@ public class ChanBotEvent extends EventObject implements IChanBotEvent {
 	public IIrcMessage getIRCMessage() {
 		return msg;
 	}
+
+	@Override
+	public String getEventCommandId() {
+		return getBotCommandName();
+	}
 }

@@ -7,7 +7,7 @@
  * Window>Preferences>Java>Code Generation.
  */
 
-package botFramework;
+package elsie.util;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.List;
