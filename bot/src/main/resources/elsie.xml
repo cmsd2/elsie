@@ -5,11 +5,19 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        	<property name="locations">
+                	<list>
+                        	<value>classpath:elsie.properties</value>
+                	</list>
+        	</property>
+  	</bean>
+
 	<bean id="mainChannel" class="botFramework.Channel" scope="singleton">
 		<property name="bot" ref="bot"/>
 		<property name="channels" ref="channels"/>
 		<property name="channel">
-			<value>#elsiebot</value>
+			<value>${elsie.irc.mainChannel}</value>
 		</property>
 	</bean>
 	
@@ -24,12 +32,8 @@
 	
 	<bean id="database" class="botFramework.DBHandler" scope="singleton">
 		<property name="bot" ref="bot"/>
-		<property name="driver">
-			<value>com.mysql.jdbc.Driver</value>
-		</property>
-		<property name="url">
-			<value>jdbc:mysql://localhost:3306/irc?user=elsiebot&amp;password=trncfckwts</value>
-		</property>
+		<property name="driver" value="${elsie.database.driver"/>
+		<property name="url" value="${elsie.database.url}"/>
 	</bean>
 
 </beans>

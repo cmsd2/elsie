@@ -1,0 +1,13 @@
+elsie.database.driver=com.mysql.jdbc.Driver
+elsie.database.url=jdbc:mysql://127.0.0.1:3306/irc?user=elsiebot&password=<password>
+elsie.irc.mainChannel=#elsiebot
+elsie.irc.server1=irc.prison.net
+elsie.irc.server2=efnet.demon.co.uk
+elsie.irc.server3=irc.isdnet.fr
+elsie.irc.nick1=elsie
+elsie.irc.nick2=elsiebot
+elsie.irc.nick3=jelsie
+elsie.irc.port=6667
+elsie.irc.realName=me
+elsie.irc.encoding=iso-8859-1
+elsie.irc.mode=0

@@ -36,4 +36,6 @@ public interface IBot {
 	public String getHostname();
 
 	public IIrcProtocol getIrc();
+	
+	public boolean isRegistered();
 }

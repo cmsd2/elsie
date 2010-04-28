@@ -28,14 +28,11 @@ package botFramework;
  */
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import elsie.util.IrcProtocol;
 
 import botFramework.interfaces.IBot;
 import botFramework.interfaces.IBotEvent;
@@ -50,6 +47,7 @@ import botFramework.interfaces.IEventSource;
 import botFramework.interfaces.IIrcEvent;
 import botFramework.interfaces.IIrcListener;
 import botFramework.interfaces.IIrcMessage;
+import elsie.util.IrcProtocol;
 
 public class Channel implements IChannel, IEventSink {
 	private static final Log log = LogFactory.getLog(Channel.class);
@@ -60,7 +58,7 @@ public class Channel implements IChannel, IEventSink {
 	private String channel;
 	
 	private Map<String,User> userStatus = new HashMap<String, User>();
-	private IrcProtocol irc;
+	private IrcProtocol irc = new IrcProtocol();
 	
 	private IEventSource<IErrorEvent> errorEvents;
 	private IEventSource<IChanEvent> chanEvents;
@@ -75,6 +73,8 @@ public class Channel implements IChannel, IEventSink {
 		chanEvents = new EventSource<IChanEvent> (this, errorEvents);
 		chanBotEvents = new EventSource<IChanBotEvent> (this, errorEvents);
 		unknownCommandEvents = new EventSource<IChanBotEvent> (this, errorEvents);
+		
+		chanEvents.add(getChanListener());
 	}
 	
 	public String getChannel()
@@ -89,10 +89,6 @@ public class Channel implements IChannel, IEventSink {
 
 	public void init()
 	{
-		userStatus = new Hashtable();
-		irc = new IrcProtocol();
-
-		chanEvents.add(getChanListener());
 	}
 
 	public IChanListener getChanListener() {
@@ -401,8 +397,16 @@ public class Channel implements IChannel, IEventSink {
 	 * @see botFramework.IChannel#join()
 	 */
 	public void join() {
-		log.info("joining " + channel);
-		bot.enqueueCommand(irc.join(channel));
+		if(bot.isRegistered())
+		{
+			log.info("joining " + channel);
+		
+			String joinCmd = irc.join(channel);
+		
+			bot.enqueueCommand(joinCmd);
+		} else {
+			log.info("Not joining yet " + channel + ": not registered");
+		}
 	}
 	
 	/* (non-Javadoc)

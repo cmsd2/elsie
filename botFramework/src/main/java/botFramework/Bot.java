@@ -92,6 +92,8 @@ public class Bot extends Thread implements IBot {
 	
 	private String encoding;
 	
+	private boolean registered = false;
+
 	//Mode is the join mode on the server - i.e. invisible etc - see RFC
 	public Bot()
 	{
@@ -254,6 +256,11 @@ public class Bot extends Thread implements IBot {
 		errorEventSource.sendEvent(module, event);
 	}
 	
+	public boolean isRegistered()
+	{
+		return registered;
+	}
+	
 	public void run() {
 		List<IIrcMessage> command;
 		
@@ -288,6 +295,11 @@ public class Bot extends Thread implements IBot {
 							String temp = msg.getEscapedParams().replaceFirst(myNick + ":? +","");
 							String[] botCmd = temp.split(" +");
 							sendBotEvent(msg.getPrefixNick(),botCmd,msg.isPrivate());
+						} else if(msg.getCommand().equals("001")) {
+							registered = true;
+							for (IChannel c: channels) {
+								c.join();
+							}
 						}
 						
 						sendMessages();
@@ -332,10 +344,6 @@ public class Bot extends Thread implements IBot {
 			sender.write(irc.nick(myNick));
 			sender.write(irc.user(myNick,mode,realname));
 			sender.flush();
-		
-			for (IChannel c: channels) {
-				c.join();
-			}
 		}
 		catch (SocketTimeoutException e) {
 			log.error("socket timeout while connecting", e);
@@ -494,7 +502,10 @@ public class Bot extends Thread implements IBot {
 		if (command.getCommand().equalsIgnoreCase("PING")) {
 			consecutiveErrors = 0;
 			log.info("Sending pong");
-			enqueueCommand(irc.pong(hostname));
+			String self = hostname;
+			if(command.getEscapedParams() != null && command.getEscapedParams().length() > 0)
+				self = command.getEscapedParams();
+			enqueueCommand(irc.pong(self));
 		}
 		else if (command.getCommand().equalsIgnoreCase("ERROR")) {
 			consecutiveErrors++;
