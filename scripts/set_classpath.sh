@@ -16,22 +16,14 @@ if [ "$DIRNAME" = "/" ]; then
 fi
 
 ROOT="${DIRNAME%/*}"
-BIN="bin"
+BIN="scripts"
 LIB="lib"
 CONFIG_DIR="config"
-COMMON_LIB="common/lib"
-SERVER_LIB="server/lib"
-PLUGINS_LIB="plugins/lib"
-PLUGINS_CLASSES="plugins/classes"
 
 echo ROOT=$ROOT
 echo BIN=$BIN
 echo LIB=$LIB
 echo CONFIG_DIR=$CONFIG_DIR
-echo COMMON_LIB=$COMMON_LIB
-echo SERVER_LIB=$SERVER_LIB
-echo PLUGINS_LIB=$PLUGINS_LIB
-echo PLUGINS_CLASSES=$PLUGINS_CLASSES
 
 append_classpath() {
   if [ x"" = "x$CLASSPATH" ]; then
@@ -48,9 +40,7 @@ append_libdir() {
 }
 
 append_libdir $LIB
-append_libdir $COMMON_LIB
-append_libdir $SERVER_LIB
-append_classpath $CONFIG_DIR
+append_classpath $ROOT/$CONFIG_DIR
 
 JAVA=`which java`
 

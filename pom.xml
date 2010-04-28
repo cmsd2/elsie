@@ -22,6 +22,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.6</version>
+    </dependency>
+    <dependency>
       <groupId>uk.org.elsie</groupId>
       <artifactId>botFramework-interfaces</artifactId>
       <version>1.0-SNAPSHOT</version>
@@ -34,6 +39,11 @@
     <dependency>
       <groupId>uk.org.elsie</groupId>
       <artifactId>elsie-bot</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.org.elsie</groupId>
+      <artifactId>elsie-plugins</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
@@ -58,6 +68,61 @@
           <target>1.5</target>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+<!--
+                <artifactItems>
+                  <artifactItem>
+                     <groupId>junit</groupId>
+                     <artifactId>junit</artifactId>
+                     <version>3.8.1</version>
+                     <type>jar</type>
+                     <overWrite>false</overWrite>
+                     <outputDirectory>${project.build.directory}/alternateLocation</location>
+                     <destFileName>optional-new-name.jar</destFileName>
+                   </artifactItem>
+                 </artifactItems>
+-->
+               <outputDirectory>${project.build.directory}/lib</outputDirectory>
+               <overWriteReleases>false</overWriteReleases>
+               <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+	<plugin>
+           <artifactId>maven-antrun-plugin</artifactId>
+           <executions>
+             <execution>
+               <phase>package</phase>
+               <goals>
+                 <goal>run</goal>
+               </goals>
+               <configuration>
+                 <tasks>
+                   <copy todir="${project.build.directory}/scripts">
+                     <fileset dir="scripts"/>
+                   </copy>
+                   <copy todir="${project.build.directory}/config">
+                     <fileset dir="config"/>
+                   </copy>
+                   <chmod dir="${project.build.directory}/scripts" perm="755" includes="*.sh"/>
+                 </tasks>
+               </configuration>
+             </execution>
+           </executions>
+         </plugin>
 
     </plugins>
   </build>
